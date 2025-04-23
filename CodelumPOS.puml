@@ -1,0 +1,609 @@
+@startuml  
+/' 
+ Modelo de Restaurante con Sucursales, Canales de Venta, Puntos de Venta, Gestión de Almacenes, Auditoría, Reservaciones/Promociones y Módulo de Cajas.
+ Optimizado a 3FN y con mejoras en nomenclatura, normalización y trazabilidad.
+'/ 
+
+' ALMACENES =================
+entity Warehouse {
+  * id : int <<PK>>
+  --
+  name : string
+  shortname : string
+  parent_warehouse_id : int /'Para reabastecimiento de otro almacén'/
+  branch_id : int /'Ubicación o dirección del almacén'/
+  created_at : datetime
+  updated_at : datetime
+}
+
+entity Storage_type {
+  * id : int <<PK>>
+  --
+  name : string
+  maximumWeight : string  /'Kg, Libras, etc.'/
+  allowNewProduct : boolean /'Si la ubicación está vacía, permite productos mezclados'/
+  status : string
+  created_at : datetime
+  updated_at : datetime
+}
+
+entity Detail_storage_type {
+  * id : int <<PK>>
+  --
+  warehouseCategory_id : int <FK>
+  product_id : int <FK>
+  quantity : int
+  created_at : datetime
+  updated_at : datetime
+}
+
+' ENTIDAD: SUCURSAL
+entity Branch {
+  * id : int <<PK>>
+  --
+  name : string
+  country : string
+  city : string       
+  address : string 
+  phone : string
+  status : string
+  created_at : datetime
+  updated_at : datetime
+}
+
+' PUNTO DE VENTA (POS)
+entity POS {
+  * id : int <<PK>>
+  --
+  name : string           /'Tipo de punto de venta (restaurante, RestoBar, etc.)'/
+  
+  'assigned_user_id : int <FK> 'Usuario asignado
+  branch_id : int <FK>
+  created_at : datetime
+  updated_at : datetime
+}
+
+
+' CLIENTE
+entity IDType {
+  * id : int <<PK>>
+  --
+  name : string
+}
+entity Customer {
+  * id : int <<PK>>
+  --
+  IDType_id: int <<FK>>
+  IDNumber: nvarchar
+  name : string
+  lastname : string
+  phone : string
+  email : string
+  created_at : datetime
+  updated_at : datetime
+}
+
+' MESA
+entity Table {
+  * id : int <<PK>>
+  --
+  number : int
+  capacity : int
+  status : string
+  created_at : datetime
+  updated_at : datetime
+}
+
+' EMPLEADO
+entity Employee {
+  * id : int <<PK>>
+  --
+  first_name : string
+  last_name : string
+  role : string
+  created_at : datetime
+  updated_at : datetime
+}
+
+' ORDEN
+entity Order {
+  * id : int <<PK>>
+  --
+  table_id : int <FK>
+  employee_id : int <FK> /'Replaces waiter_id'/
+  customer_id : int <FK> [optional]
+  order_date : datetime
+  total : decimal
+  order_type_id : int <FK>
+  order_status : string /'pendiente, en preparación, servida, cancelada'/
+  status : string /'kitchen_status'/
+  created_at : datetime
+  updated_at : datetime
+}
+
+' TIPO DE ORDEN
+entity Order_type {
+  * id : int <<PK>>
+  --
+  name : string
+  description : string
+  created_at : datetime
+  updated_at : datetime
+}
+
+' DETALLE DE LA ORDEN
+entity Order_detail {
+  * id : int <<PK>>
+  --
+  order_id : int <FK>
+  product_id : int <FK>
+  quantity : int
+  subtotal : decimal
+  created_at : datetime
+  updated_at : datetime
+}
+
+' TIPO DE PRODUCTO
+entity Product_type {
+  * id : int <<PK>>
+  --
+  name : string
+  description : string
+  created_at : datetime
+  updated_at : datetime
+}
+
+' PRODUCTO ==================
+entity Product {
+  * id : int <<PK>>
+  --
+  name : string
+  description : string
+  image_uri : string
+  cost_price : decimal
+  utility : decimal
+  final_price : decimal
+  supplier_id : int <FK>
+  product_type_id : int <FK>
+  created_at : datetime
+  updated_at : datetime
+}
+
+' Product Taxes
+entity Product_tax {
+  * id : int <<PK>>
+  --
+  product_id : int <FK>
+  tax_id : int <FK>
+  created_at : datetime
+  updated_at : datetime
+}
+
+' INVENTARIO (para sucursales)
+entity Inventory {
+  * id : int <<PK>>
+  --
+  barCode: string 
+  product_id : int <FK>
+  warehouse_id : int <FK>
+  min_stock : int
+  max_stock : int
+  current_stock : int
+  alert_high_stock : int
+  alert_low_stock : int
+  created_at : datetime
+  updated_at : datetime
+}
+
+' USUARIOS Y PERMISOS
+entity User {
+  * id : int <<PK>>
+  --
+  username : string
+  password : string     /'Almacenar hash de la contraseña'/
+  role_id : int <FK>
+  status : int
+  created_at : datetime
+  updated_at : datetime
+}
+
+entity Role {
+  * id : int <<PK>>
+  --
+  name : string
+  created_at : datetime
+  updated_at : datetime
+}
+
+entity Permission {
+  * id : int <<PK>>
+  --
+  name : string
+  description : string
+  created_at : datetime
+  updated_at : datetime
+}
+
+' Tabla intermedia con clave compuesta (en lugar de id)
+entity Role_permission {
+  --
+  role_id : int <FK>
+  permission_id : int <FK>
+  created_at : datetime
+  updated_at : datetime
+}
+
+' COMPROBANTES (boleta, factura)
+entity Receipt_type {
+  * id : int <<PK>>
+  --
+  name : string
+  description : string
+  created_at : datetime
+  updated_at : datetime
+}
+
+' CANALES DE VENTA (web, tienda, terceros)
+entity Sales_channel {
+  * id : int <<PK>>
+  --
+  name : string
+  description : string
+  created_at : datetime
+  updated_at : datetime
+}
+
+' VENTA (transacción final)
+entity Sale {
+  * id : int <<PK>>
+  --
+  date : datetime
+  user_id : int <FK>
+  total : decimal
+  customer_id : int <FK>
+  receipt_type_id : int <FK>
+  payment_method_id : int <FK>
+  sales_channel_id : int <FK>
+  pos_id : int <FK>
+  sale_condition_id: <<FK>>
+  discount_id: int <<FK>>
+  creditTerm: nvarchar(10) /'plazo credito: Se omite si viene vacío, pero es de condición obligatoria cuando la condición de la venta es crédito'/
+  tax_id: int <<FK>>
+  created_at : datetime
+  updated_at : datetime
+}
+entity Sale_order_details {
+  * id : int <<PK>>
+  --
+  sale_id: int <<FK>>
+  order_id: INT <<FK>>
+  created_at : datetime
+  updated_at : datetime
+}
+
+' MÉTODO DE PAGO
+entity Payment_method {
+  * id : int <<PK>>
+  --
+  name : string
+  status : int
+  created_at : datetime
+  updated_at : datetime
+}
+
+' MOVIMIENTOS DE INVENTARIO
+entity Inventory_movement {
+  * id : int <<PK>>
+  --
+  inventory_id : int <FK>
+  movement_date : datetime
+  movement_type_id : int <FK>
+  quantity : int
+  description : string
+  created_at : datetime
+  updated_at : datetime
+}
+
+' TIPO DE MOVIMIENTO (ingreso o salida)
+entity Movement_type {
+  * id : int <<PK>>
+  --
+  name : string
+  created_at : datetime
+  updated_at : datetime
+}
+
+' NUEVAS ENTIDADES: Reservaciones y Promociones
+
+' Reservaciones
+entity Reservation {
+  * id : int <<PK>>
+  --
+  customer_id : int <FK>
+  table_id : int <FK>
+  reservation_date : datetime
+  number_of_people : int
+  status : string /'pendiente, confirmada, cancelada'/
+  note : string
+  created_at : datetime
+  updated_at : datetime
+}
+
+' Impuestos
+entity Tax {
+  * id : int <<PK>>
+  --
+  name : string
+  rate : decimal
+  created_at : datetime
+  updated_at : datetime
+}
+
+' MÓDULO DE CAJAS
+
+' Caja principal
+entity CashRegister {
+  * id : int <<PK>>
+  --
+  name : string
+  pos_id : int <<FK>>
+  openTime : datetime
+  closeTime : datetime
+  initialAmount : decimal /'Monto inicial, ej: $100'/ 
+  finalAmount : decimal /'Monto final, ej: $100'/ 
+  description: string
+  created_at : datetime
+  updated_at : datetime
+}
+
+' (Apertura de caja)
+entity CashRegister_operation {
+  * id : int <<PK>>
+  --
+  mount: decimal
+  cashRegister_id : int <<FK>>
+  movement_type_id: int <<FK>>
+  user_id: int <<FK>>
+  description : nvarchar
+  created_at : datetime
+  updated_at : datetime
+}
+
+' Promociones y Descuentos
+entity Discount {
+  * id : int <<PK>>
+  --
+  name : string
+  description : string
+  discount_type : string /'percentage or fixed amount'/
+  value : decimal
+  start_date : datetime
+  end_date : datetime
+  created_at : datetime
+  updated_at : datetime
+}
+
+' Turnos
+entity Shift {
+  * id : int <<PK>>
+  --
+  branch_id : int <<FK>>
+  start_time : datetime
+  end_time : datetime
+  status : string /'open, closed'/
+  created_at : datetime
+  updated_at : datetime
+}
+
+' Auditoría
+entity AuditLog {
+  * id : int <<PK>>
+  --
+  user_id : int <<FK>>
+  action : string
+  entity_name : string
+  entity_id : int
+  timestamp : datetime
+  description : string
+}
+
+' Proveedor
+entity Supplier {
+  * id : int <<PK>>
+  --
+  name : string
+  contact : string
+  email : string
+  address : string
+  created_at : datetime
+  updated_at : datetime
+}
+
+' Programa de Lealtad
+entity LoyaltyProgram {
+  * id : int <<PK>>
+  --
+  name : string
+  points : int
+  customer_id : int <<FK>>
+  created_at : datetime
+  updated_at : datetime
+}
+
+' Relación entre Employee y Shift mediante tabla intermedia.
+entity Employee_Shift {
+  * id : int <<PK>>
+  --
+  employee_id : int <<FK>>
+  shift_id : int <<FK>>
+  created_at : datetime
+  updated_at : datetime
+}
+/'condicion venta, contado, credito,'/
+entity Sale_condition {
+  * id : int <<PK>>
+  --
+  name: string
+}
+'MODULO FACTURACION
+entity Invoice {
+  * id : int <<PK>>
+  --
+  batch_Id : int
+  sale_id: int <<FK>>
+  cashRegister_id:int <<FK>>
+  key: mvarchar(50) /'(si no se envía el API lo genera automáticamente y lo devuelve en la respuesta)'/
+  consecutiveNumber : varchar(20)
+  issueDate : datetime
+  currencyCode : varchar(3) /'codigo moneda'/
+  exchangeRate : decimal(18,5) /'tipo de cambio'/
+  invoiceComment : varchar(255) /'Comentario factura'/
+  document : varchar(255)
+  emailCopy : varchar(255) /'deben de venir separadas por punto y coma (;) sin espacios.'/
+  /' en la descripcioon dice que no es necesario ya que son calculos automaticos, lo guardamos o no 
+  totalInvoice : decimal(18,5)
+  totalDiscounts : decimal(18,5)
+  totalExempt : decimal(18,5)
+  totalTaxable : decimal(18,5)
+  totalTax : decimal(18,5)
+  totalReturnedVAT : decimal(18,5)
+  totalExemptMerchandise : decimal(18,5)
+  totalExoneratedMerchandise : decimal(18,5)
+  totalTaxableMerchandise : decimal(18,5)
+  totalOtherCharges : decimal(18,5)
+  totalExemptServices : decimal(18,5)
+  totalExoneratedServices : decimal(18,5)
+  totalTaxableServices : decimal(18,5)
+  totalSale : decimal(18,5)
+  totalNetSale : decimal(18,5)
+  '/
+  otroContenido : text
+  otroTexto : text
+}
+Sale "1" -- "0..*" Sale_order_details
+Order "1" -- "0..*" Sale_order_details
+
+'RELACION FACTURACION
+CashRegister "1" -- "0..*" Invoice
+' Receipt_type "1" -- "0..*" Invoice
+IDType "1" -- "0..*" Customer
+Sale_condition "1" -- "0..*" Sale
+
+
+'=================== Relaciones de MÓDULO DE CAJAS ====================
+CashRegister "1" -- "0..*" CashRegister_operation
+POS "1" -- "0..*" CashRegister
+
+' RELACIONES GENERALES ACTUALIZADAS
+
+' Un empleado atiende muchas órdenes.
+Employee "1" -- "0..*" Order
+
+' Un cliente puede generar muchas ventas.
+Customer "1" -- "0..*" Sale
+
+' Un tipo de orden se vincula a muchas órdenes.
+Order_type "1" -- "0..*" Order
+
+' Una orden tiene muchos detalles.
+Order "1" -- "0..*" Order_detail
+
+
+' Un producto aparece en muchos detalles.
+Product "1" -- "0..*" Order_detail
+
+' Un tipo de producto agrupa muchos productos.
+Product_type "1" -- "0..*" Product
+
+' Un usuario tiene un único rol.
+User "*" -- "1" Role
+
+' Un rol puede tener muchos permisos (vía clave compuesta).
+Role "1" -- "0..*" Role_permission : has
+Permission "1" -- "0..*" Role_permission : assigned_to
+
+' Un usuario puede registrar muchas ventas.
+User "1" -- "0..*" Sale
+
+' Un comprobante se asocia a muchas ventas.
+Receipt_type "1" -- "0..*" Sale
+
+' Un método de pago se utiliza en muchas ventas.
+Payment_method "1" -- "0..*" Sale
+
+
+' Inventario para sucursales: un producto tiene un único registro (o ninguno).
+Inventory "1" -- "0..1" Inventory_movement
+
+' Un producto genera muchos movimientos de inventario.
+Product "1" -- "0..*" Inventory_movement
+
+
+' Un tipo de movimiento se usa en muchos movimientos.
+Movement_type "1" -- "0..*" Inventory_movement
+Movement_type "1" -- "0..*" CashRegister_operation
+
+' Canal de venta se vincula a muchas ventas.
+Sales_channel "1" -- "0..*" Sale
+
+
+' Relación de Branch con Puntos de Venta.
+Branch "1" -- "0..*" POS
+
+' Relación de POS con Ventas.
+POS "1" -- "0..*" Sale
+
+' Relación de ALMACÉN con operaciones.
+Warehouse "1" -- "0..*" Inventory
+
+' Relación entre Warehouse y sí mismo para jerarquía (reabastecimiento).
+Warehouse "1" -- "0..*" Warehouse : reabastece
+
+' Relación entre Warehouse_category y Detail_warehouse_category.
+Storage_type "1" -- "0..*" Detail_storage_type
+Product "1" -- "0..*" Detail_storage_type
+
+' Relación entre Reservation y Customer/Table.
+Customer "1" -- "0..*" Reservation
+Table "1" -- "0..*" Reservation
+
+' NUEVAS RELACIONES
+
+' Un producto puede ser suministrado por muchos proveedores.
+Supplier "1" -- "0..*" Product : supplies
+
+
+' Una venta puede tener muchos descuentos aplicados.
+Sale "1" -- "0..*" Discount : has
+
+
+' Un usuario realiza acciones que se registran en el log de auditoría.
+User "1" -- "0..*" AuditLog : performs
+AuditLog "1" -- "0..1" Product : on_product
+AuditLog "1" -- "0..1" Sale : on_sale
+AuditLog "1" -- "0..1" Order : on_order
+AuditLog "1" -- "0..1" Inventory : on_inventory
+AuditLog "1" -- "0..1" Discount : on_discount
+
+
+
+
+' Una operación de caja es realizada por un usuario.
+User "1" -- "0..*" CashRegister_operation : on_discount
+
+
+
+
+' Una venta puede incluir muchos impuestos.
+' Sale "1" -- "0..*" Tax : includes
+
+Product "1" -- "0..*" Product_tax : taxed_by
+Tax "1" -- "0..*" Product_tax : applies_to
+Tax "1" -- "0..*" Sale : applies_to
+
+Employee "1" -- "0..*" Employee_Shift
+Shift "1" -- "0..*" Employee_Shift
+LoyaltyProgram "1" -- "0..*" Customer : has
+Sale "1" -- "0..*" Invoice : has
+
+@enduml
