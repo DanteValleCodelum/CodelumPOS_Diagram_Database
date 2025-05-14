@@ -480,17 +480,64 @@ entity Invoice {
   otroContenido : text
   otroTexto : text
 }
-Sale "1" -- "0..*" Sale_order_details
-Order "1" -- "0..*" Sale_order_details
+
+' Tabla maestra de pasarelas de pago.
+entity PaymentGateway {
+  * id : int <<PK>>
+  --
+  name : varchar(50) /'ej: Onvopay, tilopay,etc.'/
+  code: varchar(50) /'ej: ONVO, TILO,etc.'/
+  config: nvarchar(max) /'JSON con settings genéricos (p. ej. endpoints, llaves)'/
+  created_at : datetime
+  updated_at : datetime
+}
+'Configuración de cada cliente para cada pasarela.
+entity GatewayCustomer{
+  * id : int <<PK>>
+  --
+  customer_id: int <<FK>> /'cliente base'/
+  paymentGateway_id: int <<FK>> /'pasarela de pago'/
+  configJson: nvarchar(max) /'JSON parametros espesificos'/
+  ApiKey: varchar(255)
+  SecretKey: varchar(255)
+  RedirectUrl: varchar(500)
+  ExternalCustomerId: varchar(100) /'id que devuelve la Api de onvo por cada customer'/
+  created_at : datetime
+  updated_at : datetime
+}
+'si existe metodo de pago y hay que configurar para sinpe, card, banco.
+entity GatewayPaymentMethods{
+  * id : int <<PK>>
+  --
+  gatewayCustomer_id: int <<FK>>
+  methodType: varchar(50)  /'sinpe,card,zunify'/
+  externalMethodId: varchar(100) /'id que devuelve la Api de onvo por cada metodo de pago'/
+  metaJson: nvarchar(MAX) /'Json Configuracion base'/
+}
+'cuando se realice la transaccion copn el tipo de pasarela y metodo de pago (intencion de pago etc.)
+entity GatewayTransactions {
+  * id      : int <<PK>>
+  --
+  gatewayCustomer_id   : int <<FK>>
+  gatewayPaymentMethod_id : int <<FK>> /'opcional si existe metodo'/
+  amount: decimal(18,2)
+  currency: varchar(10)
+  status: varchar(50)
+  requestJson: nvarchar(MAX)  /'todo el payload enviado'/
+  responseJson: nvarchar(MAX) /'podemos guardar por seguridad la respuesta de cada transaccion'/
+  createdAt: datetime
+}
+'=================== Relaciones ====================
+Customer "1" -- "0..*" GatewayCustomer
+PaymentGateway "1" -- "0..*" GatewayCustomer
+GatewayCustomer "1" -- "0..*" GatewayTransactions
+GatewayPaymentMethods "1" -- "0..*" GatewayTransactions
 
 'RELACION FACTURACION
 CashRegister "1" -- "0..*" Invoice
 ' Receipt_type "1" -- "0..*" Invoice
 IDType "1" -- "0..*" Customer
 Sale_condition "1" -- "0..*" Sale
-
-
-'=================== Relaciones de MÓDULO DE CAJAS ====================
 CashRegister "1" -- "0..*" CashRegister_operation
 POS "1" -- "0..*" CashRegister
 
