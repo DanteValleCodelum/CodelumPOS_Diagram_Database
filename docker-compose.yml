@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  db:
+    build: .
+    image: codelum-postgres
+    container_name: codelum_postgres
+    env_file:
+      - .env
+    environment:
+      # si quisieras sobreescribir algo distinto al .env
+      # PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "${DB_PORT}:${DB_PORT}"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${DB_USER} -d $${DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:
