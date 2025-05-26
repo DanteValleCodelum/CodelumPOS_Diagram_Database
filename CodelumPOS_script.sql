@@ -46,6 +46,198 @@ CREATE TABLE storage_type (
 );
 
 -- =======================
+-- Table: supplier
+-- =======================
+CREATE TABLE supplier (
+    id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name          VARCHAR(50) NOT NULL,
+    contact       VARCHAR(50),
+    email         VARCHAR(50),
+    address       VARCHAR(50),
+    created_at    TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at    TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+-- =======================
+-- Table: product_type
+-- =======================
+CREATE TABLE product_type (
+    id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name          VARCHAR(50) NOT NULL,
+    description   VARCHAR(50),
+    created_at    TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at    TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+-- =======================
+-- Table: id_type
+-- =======================
+CREATE TABLE id_type (
+    id   UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name VARCHAR(50) NOT NULL
+);
+
+-- =======================
+-- Table: employee
+-- =======================
+CREATE TABLE employee (
+    id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    first_name    VARCHAR(50) NOT NULL,
+    last_name     VARCHAR(50) NOT NULL,
+    role          VARCHAR(50),
+    created_at    TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at    TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+-- =======================
+-- Table: order_type
+-- =======================
+CREATE TABLE order_type (
+    id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name          VARCHAR(50) NOT NULL,
+    description   VARCHAR(50),
+    created_at    TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at    TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+
+-- =======================
+-- Table: payment_method
+-- =======================
+CREATE TABLE payment_method (
+    id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name          VARCHAR(50) NOT NULL,
+    status        INT,
+    created_at    TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at    TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+-- =======================
+-- Table: role
+-- =======================
+CREATE TABLE role (
+    id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name          VARCHAR(50) NOT NULL,
+    created_at    TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at    TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+-- =======================
+-- Table: tax
+-- =======================
+CREATE TABLE tax (
+    id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name          VARCHAR(50) NOT NULL,
+    rate          DECIMAL NOT NULL,
+    created_at    TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at    TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+-- =======================
+-- Table: permission
+-- =======================
+CREATE TABLE permission (
+    id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name          VARCHAR(50) NOT NULL,
+    description   VARCHAR(50),
+    created_at    TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at    TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+
+-- =======================
+-- Table: payment_gateway
+-- =======================
+CREATE TABLE payment_gateway (
+    id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name          VARCHAR(50) NOT NULL,
+    code          VARCHAR(50) NOT NULL,
+    config        JSONB,
+    created_at    TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at    TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+-- =======================
+-- Table: user_system
+-- =======================
+CREATE TABLE user_system (
+    id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    username      VARCHAR(50) NOT NULL,
+    password      VARCHAR(50) NOT NULL,
+    role_id       UUID NOT NULL REFERENCES role(id),
+    status        INT,
+    created_at    TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at    TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+-- =======================
+-- Table: receipt_type
+-- =======================
+CREATE TABLE receipt_type (
+    id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name          VARCHAR(50) NOT NULL,
+    description   VARCHAR(50),
+    created_at    TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at    TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+-- =======================
+-- Table: sales_channel
+-- =======================
+CREATE TABLE sales_channel (
+    id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name          VARCHAR(50) NOT NULL,
+    description   VARCHAR(50),
+    created_at    TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at    TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+-- =======================
+-- Table: table_restaurant
+-- =======================
+CREATE TABLE table_restaurant (
+    id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    number        INT NOT NULL,
+    capacity      INT NOT NULL,
+    status        VARCHAR(50),
+    created_at    TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at    TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+-- =======================
+-- Table: sale_condition
+-- =======================
+CREATE TABLE sale_condition (
+    id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name          VARCHAR(50) NOT NULL
+);
+
+-- =======================
+-- Table: movement_type
+-- =======================
+CREATE TABLE movement_type (
+    id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name          VARCHAR(50) NOT NULL,
+    created_at    TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at    TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+-- =======================
+-- Table: discount
+-- =======================
+CREATE TABLE discount (
+    id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name          VARCHAR(50) NOT NULL,
+    description   VARCHAR(50),
+    discount_type VARCHAR(50) NOT NULL,
+    value         DECIMAL NOT NULL,
+    start_date    TIMESTAMP NOT NULL,
+    end_date      TIMESTAMP NOT NULL,
+    created_at    TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at    TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+-- =======================
 -- Table: product
 -- =======================
 CREATE TABLE product (
@@ -86,14 +278,6 @@ CREATE TABLE pos (
 );
 
 -- =======================
--- Table: id_type
--- =======================
-CREATE TABLE id_type (
-    id   UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name VARCHAR(50) NOT NULL
-);
-
--- =======================
 -- Table: customer
 -- =======================
 CREATE TABLE customer (
@@ -108,40 +292,6 @@ CREATE TABLE customer (
     updated_at    TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
--- =======================
--- Table: table_restaurant
--- =======================
-CREATE TABLE table_restaurant (
-    id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    number        INT NOT NULL,
-    capacity      INT NOT NULL,
-    status        VARCHAR(50),
-    created_at    TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at    TIMESTAMP NOT NULL DEFAULT NOW()
-);
-
--- =======================
--- Table: employee
--- =======================
-CREATE TABLE employee (
-    id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    first_name    VARCHAR(50) NOT NULL,
-    last_name     VARCHAR(50) NOT NULL,
-    role          VARCHAR(50),
-    created_at    TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at    TIMESTAMP NOT NULL DEFAULT NOW()
-);
-
--- =======================
--- Table: order_type
--- =======================
-CREATE TABLE order_type (
-    id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name          VARCHAR(50) NOT NULL,
-    description   VARCHAR(50),
-    created_at    TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at    TIMESTAMP NOT NULL DEFAULT NOW()
-);
 
 -- =======================
 -- Table: "order"
@@ -173,16 +323,6 @@ CREATE TABLE order_detail (
     updated_at    TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
--- =======================
--- Table: product_type
--- =======================
-CREATE TABLE product_type (
-    id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name          VARCHAR(50) NOT NULL,
-    description   VARCHAR(50),
-    created_at    TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at    TIMESTAMP NOT NULL DEFAULT NOW()
-);
 
 -- =======================
 -- Table: product_tax
@@ -213,38 +353,6 @@ CREATE TABLE inventory (
 );
 
 -- =======================
--- Table: payment_method
--- =======================
-CREATE TABLE payment_method (
-    id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name          VARCHAR(50) NOT NULL,
-    status        INT,
-    created_at    TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at    TIMESTAMP NOT NULL DEFAULT NOW()
-);
-
--- =======================
--- Table: role
--- =======================
-CREATE TABLE role (
-    id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name          VARCHAR(50) NOT NULL,
-    created_at    TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at    TIMESTAMP NOT NULL DEFAULT NOW()
-);
-
--- =======================
--- Table: permission
--- =======================
-CREATE TABLE permission (
-    id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name          VARCHAR(50) NOT NULL,
-    description   VARCHAR(50),
-    created_at    TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at    TIMESTAMP NOT NULL DEFAULT NOW()
-);
-
--- =======================
 -- Table: role_permission
 -- =======================
 CREATE TABLE role_permission (
@@ -253,49 +361,6 @@ CREATE TABLE role_permission (
     permission_id   UUID NOT NULL REFERENCES permission(id),
     created_at      TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at      TIMESTAMP NOT NULL DEFAULT NOW()
-);
-
--- =======================
--- Table: user_system
--- =======================
-CREATE TABLE user_system (
-    id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    username      VARCHAR(50) NOT NULL,
-    password      VARCHAR(50) NOT NULL,
-    role_id       UUID NOT NULL REFERENCES role(id),
-    status        INT,
-    created_at    TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at    TIMESTAMP NOT NULL DEFAULT NOW()
-);
-
--- =======================
--- Table: receipt_type
--- =======================
-CREATE TABLE receipt_type (
-    id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name          VARCHAR(50) NOT NULL,
-    description   VARCHAR(50),
-    created_at    TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at    TIMESTAMP NOT NULL DEFAULT NOW()
-);
-
--- =======================
--- Table: sales_channel
--- =======================
-CREATE TABLE sales_channel (
-    id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name          VARCHAR(50) NOT NULL,
-    description   VARCHAR(50),
-    created_at    TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at    TIMESTAMP NOT NULL DEFAULT NOW()
-);
-
--- =======================
--- Table: sale_condition
--- =======================
-CREATE TABLE sale_condition (
-    id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name          VARCHAR(50) NOT NULL
 );
 
 -- =======================
@@ -331,16 +396,6 @@ CREATE TABLE sale_order_details (
 );
 
 -- =======================
--- Table: movement_type
--- =======================
-CREATE TABLE movement_type (
-    id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name          VARCHAR(50) NOT NULL,
-    created_at    TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at    TIMESTAMP NOT NULL DEFAULT NOW()
-);
-
--- =======================
 -- Table: inventory_movement
 -- =======================
 CREATE TABLE inventory_movement (
@@ -367,17 +422,6 @@ CREATE TABLE reservation (
     note               VARCHAR(50),
     created_at         TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at         TIMESTAMP NOT NULL DEFAULT NOW()
-);
-
--- =======================
--- Table: tax
--- =======================
-CREATE TABLE tax (
-    id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name          VARCHAR(50) NOT NULL,
-    rate          DECIMAL NOT NULL,
-    created_at    TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at    TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
 -- =======================
@@ -411,21 +455,6 @@ CREATE TABLE cash_register_operation (
 );
 
 -- =======================
--- Table: discount
--- =======================
-CREATE TABLE discount (
-    id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name          VARCHAR(50) NOT NULL,
-    description   VARCHAR(50),
-    discount_type VARCHAR(50) NOT NULL,
-    value         DECIMAL NOT NULL,
-    start_date    TIMESTAMP NOT NULL,
-    end_date      TIMESTAMP NOT NULL,
-    created_at    TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at    TIMESTAMP NOT NULL DEFAULT NOW()
-);
-
--- =======================
 -- Table: shift
 -- =======================
 CREATE TABLE shift (
@@ -449,19 +478,6 @@ CREATE TABLE audit_log (
     entity_id     UUID NOT NULL,
     timestamp     TIMESTAMP NOT NULL DEFAULT NOW(),
     description   VARCHAR(50)
-);
-
--- =======================
--- Table: supplier
--- =======================
-CREATE TABLE supplier (
-    id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name          VARCHAR(50) NOT NULL,
-    contact       VARCHAR(50),
-    email         VARCHAR(50),
-    address       VARCHAR(50),
-    created_at    TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at    TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
 -- =======================
@@ -505,18 +521,6 @@ CREATE TABLE invoice (
     email_copy          VARCHAR(255),
     other_content       VARCHAR(255),
     other_text          VARCHAR(255)
-);
-
--- =======================
--- Table: payment_gateway
--- =======================
-CREATE TABLE payment_gateway (
-    id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name          VARCHAR(50) NOT NULL,
-    code          VARCHAR(50) NOT NULL,
-    config        JSONB,
-    created_at    TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at    TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
 -- =======================
