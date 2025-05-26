@@ -46,6 +46,23 @@ CREATE TABLE storage_type (
 );
 
 -- =======================
+-- Table: product
+-- =======================
+CREATE TABLE product (
+    id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name             VARCHAR(50) NOT NULL,
+    description      VARCHAR(50),
+    image_uri        VARCHAR(255),
+    cost_price       DECIMAL NOT NULL,
+    utility          DECIMAL NOT NULL,
+    final_price      DECIMAL NOT NULL,
+    supplier_id      UUID REFERENCES supplier(id),
+    product_type_id  UUID NOT NULL REFERENCES product_type(id),
+    created_at       TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at       TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+-- =======================
 -- Table: detail_storage_type
 -- =======================
 CREATE TABLE detail_storage_type (
@@ -129,7 +146,7 @@ CREATE TABLE order_type (
 -- =======================
 -- Table: "order"
 -- =======================
-CREATE TABLE order (
+CREATE TABLE orders (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     table_id        UUID NOT NULL REFERENCES table_restaurant(id),
     employee_id     UUID NOT NULL REFERENCES employee(id),
@@ -148,7 +165,7 @@ CREATE TABLE order (
 -- =======================
 CREATE TABLE order_detail (
     id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    order_id      UUID NOT NULL REFERENCES order(id),
+    order_id      UUID NOT NULL REFERENCES orders(id),
     product_id    UUID NOT NULL REFERENCES product(id),
     quantity      INT NOT NULL,
     subtotal      DECIMAL NOT NULL,
@@ -165,23 +182,6 @@ CREATE TABLE product_type (
     description   VARCHAR(50),
     created_at    TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at    TIMESTAMP NOT NULL DEFAULT NOW()
-);
-
--- =======================
--- Table: product
--- =======================
-CREATE TABLE product (
-    id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name             VARCHAR(50) NOT NULL,
-    description      VARCHAR(50),
-    image_uri        VARCHAR(255),
-    cost_price       DECIMAL NOT NULL,
-    utility          DECIMAL NOT NULL,
-    final_price      DECIMAL NOT NULL,
-    supplier_id      UUID REFERENCES supplier(id),
-    product_type_id  UUID NOT NULL REFERENCES product_type(id),
-    created_at       TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at       TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
 -- =======================
@@ -325,7 +325,7 @@ CREATE TABLE sale (
 CREATE TABLE sale_order_details (
     id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     sale_id       UUID NOT NULL REFERENCES sale(id),
-    order_id      UUID NOT NULL REFERENCES order(id),
+    order_id      UUID NOT NULL REFERENCES orders(id),
     created_at    TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at    TIMESTAMP NOT NULL DEFAULT NOW()
 );
