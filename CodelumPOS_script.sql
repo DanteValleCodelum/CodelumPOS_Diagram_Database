@@ -14,7 +14,7 @@ CREATE TABLE branch (
     city          VARCHAR(50) NOT NULL,
     address       VARCHAR(50) NOT NULL,
     phone         VARCHAR(50),
-    status        Int,
+    status        INT,
     created_at    TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at    TIMESTAMP NOT NULL DEFAULT NOW()
 );
@@ -28,6 +28,7 @@ CREATE TABLE warehouse (
     shortname             VARCHAR(50),
     parent_warehouse_id   UUID REFERENCES warehouse(id),
     branch_id             UUID NOT NULL REFERENCES branch(id),
+    status                INT,
     created_at            TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at            TIMESTAMP NOT NULL DEFAULT NOW()
 );
@@ -40,7 +41,7 @@ CREATE TABLE storage_type (
     name                VARCHAR(50) NOT NULL,
     maximum_weight      VARCHAR(50),
     allow_new_product   BOOLEAN NOT NULL DEFAULT FALSE,
-    status              VARCHAR(50),
+    status              INT,
     created_at          TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at          TIMESTAMP NOT NULL DEFAULT NOW()
 );

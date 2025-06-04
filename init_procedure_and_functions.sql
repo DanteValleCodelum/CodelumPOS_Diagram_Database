@@ -527,4 +527,207 @@ END;
 $$;
 
 
--- 2.3. SP: Upsert Employee en employee
+-- 3. SP: CRUD Warehouse
+CREATE OR REPLACE PROCEDURE sp_upsert_warehouse(
+    IN _id                  UUID,
+    IN _name                VARCHAR,
+    IN _shortname           VARCHAR,
+    IN _parent_warehouse_id UUID,
+    IN _branch_id           UUID
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    BEGIN
+        IF _id IS NOT NULL THEN
+            -- Actualización de almacén existente
+            UPDATE warehouse
+            SET
+                name                = _name,
+                shortname           = _shortname,
+                parent_warehouse_id = _parent_warehouse_id,
+                branch_id           = _branch_id,
+                updated_at          = NOW()
+            WHERE id = _id;
+
+            IF NOT FOUND THEN
+                RAISE EXCEPTION 'No existe un warehouse con id %', _id;
+            END IF;
+        ELSE
+            -- Inserción de nuevo almacén
+            INSERT INTO warehouse(name, shortname, parent_warehouse_id, branch_id, created_at)
+            VALUES (_name, _shortname, _parent_warehouse_id, _branch_id, NOW());
+        END IF;
+
+    EXCEPTION
+        WHEN OTHERS THEN
+            RAISE EXCEPTION 'Error en sp_upsert_warehouse: %', SQLERRM;
+    END;
+END;
+$$;
+CREATE OR REPLACE FUNCTION fn_get_all_warehouse()
+RETURNS TABLE (
+    id                  UUID,
+    name                VARCHAR,
+    shortname           VARCHAR,
+    parent_warehouse_id UUID,
+    branch_id           UUID,
+    created_at          TIMESTAMP,
+    updated_at          TIMESTAMP
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT id, name, shortname, parent_warehouse_id, branch_id, created_at, updated_at
+    FROM warehouse;
+END;
+$$;
+CREATE OR REPLACE FUNCTION fn_get_warehouse_by_id(
+    _id UUID
+)
+RETURNS TABLE (
+    id                  UUID,
+    name                VARCHAR,
+    shortname           VARCHAR,
+    parent_warehouse_id UUID,
+    branch_id           UUID,
+    created_at          TIMESTAMP,
+    updated_at          TIMESTAMP
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT id, name, shortname, parent_warehouse_id, branch_id, created_at, updated_at
+    FROM warehouse
+    WHERE id = _id;
+END;
+$$;
+CREATE OR REPLACE PROCEDURE sp_delete_warehouse(
+    IN _id UUID
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    BEGIN
+        UPDATE warehouse
+        SET status = 0, updated_at = NOW()
+        WHERE id = _id;
+
+        IF NOT FOUND THEN
+            RAISE EXCEPTION 'No existe un warehouse con id %', _id;
+        END IF;
+
+    EXCEPTION
+        WHEN OTHERS THEN
+            RAISE EXCEPTION 'Error en sp_delete_warehouse: %', SQLERRM;
+    END;
+END;
+$$;
+
+-- 3.1 SP: CRUD storage_type
+CREATE OR REPLACE PROCEDURE sp_upsert_storage_type(
+    IN _id                UUID,
+    IN _name              VARCHAR,
+    IN _maximum_weight    VARCHAR,
+    IN _allow_new_product BOOLEAN,
+    IN _status            INT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    BEGIN
+        IF _id IS NOT NULL THEN
+            -- Actualizar tipo de almacenamiento
+            UPDATE storage_type
+            SET
+                name               = _name,
+                maximum_weight     = _maximum_weight,
+                allow_new_product  = _allow_new_product,
+                status             = _status,
+                updated_at         = NOW()
+            WHERE id = _id;
+
+            IF NOT FOUND THEN
+                RAISE EXCEPTION 'No existe un storage_type con id %', _id;
+            END IF;
+        ELSE
+            -- Insertar nuevo tipo de almacenamiento
+            INSERT INTO storage_type(name, maximum_weight, allow_new_product, status, created_at, updated_at)
+            VALUES (_name, _maximum_weight, _allow_new_product, _status, NOW(), NOW());
+        END IF;
+
+    EXCEPTION
+        WHEN OTHERS THEN
+            RAISE EXCEPTION 'Error en sp_upsert_storage_type: %', SQLERRM;
+    END;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION fn_get_all_storage_type()
+RETURNS TABLE (
+    id                UUID,
+    name              VARCHAR,
+    maximum_weight    VARCHAR,
+    allow_new_product BOOLEAN,
+    status            INT,
+    created_at        TIMESTAMP,
+    updated_at        TIMESTAMP
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT id, name, maximum_weight, allow_new_product, status, created_at, updated_at
+    FROM storage_type;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION fn_get_storage_type_by_id(
+    _id UUID
+)
+RETURNS TABLE (
+    id                UUID,
+    name              VARCHAR,
+    maximum_weight    VARCHAR,
+    allow_new_product BOOLEAN,
+    status            INT,
+    created_at        TIMESTAMP,
+    updated_at        TIMESTAMP
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT id, name, maximum_weight, allow_new_product, status, created_at, updated_at
+    FROM storage_type
+    WHERE id = _id;
+END;
+$$;
+
+CREATE OR REPLACE PROCEDURE sp_delete_storage_type(
+    IN _id UUID
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    BEGIN
+        UPDATE storage_type
+        SET
+            status = 0,
+            updated_at = NOW()
+        WHERE id = _id;
+
+        IF NOT FOUND THEN
+            RAISE EXCEPTION 'No existe un storage_type con id %', _id;
+        END IF;
+
+    EXCEPTION
+        WHEN OTHERS THEN
+            RAISE EXCEPTION 'Error en sp_delete_storage_type: %', SQLERRM;
+    END;
+END;
+$$;
+
+
