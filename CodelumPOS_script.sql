@@ -14,7 +14,7 @@ CREATE TABLE branch (
     city          VARCHAR(50) NOT NULL,
     address       VARCHAR(50) NOT NULL,
     phone         VARCHAR(50),
-    status        VARCHAR(50),
+    status        Int,
     created_at    TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at    TIMESTAMP NOT NULL DEFAULT NOW()
 );
@@ -84,7 +84,7 @@ CREATE TABLE employee (
     id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     first_name    VARCHAR(50) NOT NULL,
     last_name     VARCHAR(50) NOT NULL,
-    role          VARCHAR(50),
+    status        INT,
     created_at    TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at    TIMESTAMP NOT NULL DEFAULT NOW()
 );
@@ -273,6 +273,7 @@ CREATE TABLE pos (
     id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name          VARCHAR(50) NOT NULL,
     branch_id     UUID NOT NULL REFERENCES branch(id),
+    status        INT,
     created_at    TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at    TIMESTAMP NOT NULL DEFAULT NOW()
 );

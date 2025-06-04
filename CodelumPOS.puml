@@ -57,6 +57,7 @@ entity POS {
   --
   name : nvarchar(50)           /'Tipo de punto de venta (restaurante, RestoBar, etc.)'/
   branch_id : int <<<FK>> > 
+  status : INT
   created_at : datetime
   updated_at : datetime
 }
@@ -98,7 +99,7 @@ entity Employee {
   --
   first_name : nvarchar(50)
   last_name : nvarchar(50)
-  role : nvarchar(50)
+  status : int
   created_at : datetime
   updated_at : datetime
 }

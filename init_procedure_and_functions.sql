@@ -2,14 +2,66 @@
 -- 1. CRUD Usuarios y Upserts Relacionados
 -- =========================================
 
--- 1.1. Función: Upsert User en user_system (retorna fila completa)
+-- 1.1. Procedure: Upsert User en user_system 
 --       Si _id IS NULL → hace INSERT y devuelve el registro nuevo.
 --       Si _id NO ES NULL → hace UPDATE y devuelve el registro actualizado.
-CREATE OR REPLACE FUNCTION fn_upsert_user_system(
-    _id       UUID,
-    _username VARCHAR,
-    _role_id  UUID,
-    _status   INT
+CREATE OR REPLACE PROCEDURE sp_upsert_user_system(
+    IN _id       UUID,
+    IN _username VARCHAR,
+    IN _password VARCHAR,
+    IN _role_id  UUID,
+    IN _status   INT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    BEGIN
+        IF _id IS NOT NULL THEN
+            -- Actualizar usuario existente
+            UPDATE user_system
+            SET
+                username   = _username,
+                role_id    = _role_id,
+                password   = _password,
+                status     = _status,
+                updated_at = NOW()
+            WHERE id = _id;
+        ELSE
+            -- Insertar nuevo usuario
+            INSERT INTO user_system(username, password, role_id, status, created_at, updated_at)
+            VALUES (_username, _password, _role_id, _status, NOW(), NOW());
+        END IF;
+
+    EXCEPTION
+        WHEN OTHERS THEN
+            RAISE EXCEPTION 'Error en sp_upsert_user_system: %', SQLERRM;
+    END;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION fn_get_all_user_system()
+RETURNS TABLE (
+    id         UUID,
+    username   VARCHAR,
+    password   VARCHAR,
+    role_id    UUID,
+    status     INT,
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        id, username, password, role_id, status, created_at, updated_at
+    FROM 
+        user_system;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION fn_get_user_system_by_id(
+    _id UUID
 )
 RETURNS TABLE (
     id         UUID,
@@ -23,33 +75,39 @@ RETURNS TABLE (
 LANGUAGE plpgsql
 AS $$
 BEGIN
-    IF _id IS NOT NULL THEN
-        -- Actualizar usuario existente (no cambia password)
-        UPDATE user_system
-        SET
-            username   = _username,
-            role_id    = _role_id,
-            status     = _status,
-            updated_at = NOW()
-        WHERE id = _id;
-    ELSE
-        -- Insertar usuario nuevo (password inicial vacío)
-        INSERT INTO user_system(username, password, role_id, status)
-        VALUES (_username, '', _role_id, _status)
-        RETURNING id, username, password, role_id, status, created_at, updated_at
-        INTO id, username, password, role_id, status, created_at, updated_at;
-        RETURN NEXT;
-        RETURN;
-    END IF;
-
-    -- Devolver registro (insertado o actualizado)
     RETURN QUERY
-    SELECT id, username, password, role_id, status, created_at, updated_at
-    FROM user_system
-    WHERE id = COALESCE(_id, id);
+    SELECT 
+        id, username, password, role_id, status, created_at, updated_at
+    FROM 
+        user_system
+    WHERE 
+        id = _id;
 END;
 $$;
 
+CREATE OR REPLACE PROCEDURE sp_delete_user_system(
+    IN _id UUID
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    BEGIN
+        UPDATE user_system
+        SET 
+            status = 0,         -- Estado inactivo o dado de baja
+            updated_at = NOW()
+        WHERE id = _id;
+
+        IF NOT FOUND THEN
+            RAISE EXCEPTION 'No existe un usuario del sistema con id %', _id;
+        END IF;
+
+    EXCEPTION
+        WHEN OTHERS THEN
+            RAISE EXCEPTION 'Error en sp_delete_user_system: %', SQLERRM;
+    END;
+END;
+$$;
 
 -- 1.2. Procedimiento: Upsert Password en user_system (solo actualiza campo password)
 --       No devuelve nada.
@@ -69,12 +127,55 @@ END;
 $$;
 
 
--- 1.3. Función: Upsert Role en role (retorna fila completa)
---       Si _id IS NULL → INSERT + RETURNING.
---       Si _id NO ES NULL → UPDATE + RETURN QUERY.
-CREATE OR REPLACE FUNCTION fn_upsert_role(
-    _id   UUID,
-    _name VARCHAR
+-- 1.3. SP: Upsert Role en role
+CREATE OR REPLACE PROCEDURE sp_upsert_role(
+    IN _id   UUID,
+    IN _name VARCHAR
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    BEGIN
+        IF _id IS NOT NULL AND EXISTS (
+            SELECT 1 FROM role WHERE id = _id
+        ) THEN
+            -- Actualizar rol existente
+            UPDATE role
+            SET
+                name       = _name,
+                updated_at = NOW()
+            WHERE id = _id;
+        ELSE
+            -- Insertar nuevo rol (id se genera automáticamente)
+            INSERT INTO role(name, created_at, updated_at)
+            VALUES (_name, NOW(), NOW());
+        END IF;
+
+    EXCEPTION
+        WHEN OTHERS THEN
+            RAISE EXCEPTION 'Error en sp_upsert_role: %', SQLERRM;
+    END;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION fn_get_all_roles()
+RETURNS TABLE (
+    id         UUID,
+    name       VARCHAR,
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT id, name, created_at, updated_at
+    FROM role;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION fn_get_role_by_id(
+    _id UUID
 )
 RETURNS TABLE (
     id         UUID,
@@ -85,36 +186,92 @@ RETURNS TABLE (
 LANGUAGE plpgsql
 AS $$
 BEGIN
-    IF _id IS NOT NULL THEN
-        UPDATE role
-        SET
-            name       = _name,
-            updated_at = NOW()
-        WHERE id = _id;
-    ELSE
-        INSERT INTO role(name)
-        VALUES (_name)
-        RETURNING id, name, created_at, updated_at
-        INTO id, name, created_at, updated_at;
-        RETURN NEXT;
-        RETURN;
-    END IF;
-
     RETURN QUERY
     SELECT id, name, created_at, updated_at
     FROM role
-    WHERE id = COALESCE(_id, id);
+    WHERE id = _id;
+END;
+$$;
+
+CREATE OR REPLACE PROCEDURE sp_delete_role(
+    IN _id UUID
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    BEGIN
+        DELETE FROM role
+        WHERE id = _id;
+
+        IF NOT FOUND THEN
+            RAISE EXCEPTION 'No existe un rol con id %', _id;
+        END IF;
+
+    EXCEPTION
+        WHEN OTHERS THEN
+            RAISE EXCEPTION 'Error en sp_delete_role: %', SQLERRM;
+    END;
 END;
 $$;
 
 
--- 1.4. Función: Upsert Permission en permission (retorna fila completa)
+-- 1.4. SP: Upsert Permission en permission
 --       Si _id IS NULL → INSERT + RETURNING.
 --       Si _id NO ES NULL → UPDATE + RETURN QUERY.
-CREATE OR REPLACE FUNCTION fn_upsert_permission(
-    _id          UUID,
-    _name        VARCHAR,
-    _description VARCHAR
+CREATE OR REPLACE PROCEDURE sp_upsert_permission(
+    IN _id          UUID,
+    IN _name        VARCHAR,
+    IN _description VARCHAR
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    BEGIN
+        IF _id IS NOT NULL THEN
+            -- Actualizar permiso existente
+            UPDATE permission
+            SET
+                name        = _name,
+                description = _description,
+                updated_at  = NOW()
+            WHERE id = _id;
+
+            IF NOT FOUND THEN
+                RAISE EXCEPTION 'No existe un permiso con id %', _id;
+            END IF;
+
+        ELSE
+            -- Insertar nuevo permiso
+            INSERT INTO permission(name, description,updated_at, created_at)
+            VALUES (_name, _description, NOW(), NOW());
+        END IF;
+
+    EXCEPTION
+        WHEN OTHERS THEN
+            RAISE EXCEPTION 'Error en sp_upsert_permission: %', SQLERRM;
+    END;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION fn_get_all_permissions()
+RETURNS TABLE (
+    id          UUID,
+    name        VARCHAR,
+    description VARCHAR,
+    created_at  TIMESTAMP,
+    updated_at  TIMESTAMP
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT id, name, description, created_at, updated_at
+    FROM permission;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION fn_get_permission_by_id(
+    _id UUID
 )
 RETURNS TABLE (
     id          UUID,
@@ -126,46 +283,104 @@ RETURNS TABLE (
 LANGUAGE plpgsql
 AS $$
 BEGIN
-    IF _id IS NOT NULL THEN
-        UPDATE permission
-        SET
-            name        = _name,
-            description = _description,
-            updated_at  = NOW()
-        WHERE id = _id;
-    ELSE
-        INSERT INTO permission(name, description)
-        VALUES (_name, _description)
-        RETURNING id, name, description, created_at, updated_at
-        INTO id, name, description, created_at, updated_at;
-        RETURN NEXT;
-        RETURN;
-    END IF;
-
     RETURN QUERY
     SELECT id, name, description, created_at, updated_at
     FROM permission
-    WHERE id = COALESCE(_id, id);
+    WHERE id = _id;
 END;
 $$;
 
+CREATE OR REPLACE PROCEDURE sp_delete_permission(
+    IN _id UUID
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    BEGIN
+        DELETE FROM permission
+        WHERE id = _id;
 
+        IF NOT FOUND THEN
+            RAISE EXCEPTION 'No existe un permiso con id %', _id;
+        END IF;
+
+    EXCEPTION
+        WHEN OTHERS THEN
+            RAISE EXCEPTION 'Error en sp_delete_permission: %', SQLERRM;
+    END;
+END;
+$$;
 
 -- ================================================
 -- 2. CRUD Sucursales y Upserts Relacionados (POS, Employees)
 -- ================================================
 
--- 2.1. Función: Upsert Branch en branch (retorna fila completa)
---       Si _id IS NULL → INSERT + RETURNING.
---       Si _id NO ES NULL → UPDATE + RETURN QUERY.
-CREATE OR REPLACE FUNCTION fn_upsert_branch(
-    _id      UUID,
-    _name    VARCHAR,
-    _country VARCHAR,
-    _city    VARCHAR,
-    _address VARCHAR,
-    _phone   VARCHAR,
-    _status  VARCHAR
+-- 2.1. SP: Upsert Branch en branch
+CREATE OR REPLACE PROCEDURE sp_upsert_branch(
+    IN _id      UUID,
+    IN _name    VARCHAR,
+    IN _country VARCHAR,
+    IN _city    VARCHAR,
+    IN _address VARCHAR,
+    IN _phone   VARCHAR,
+    IN _status  int
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    BEGIN
+        IF _id IS NOT NULL THEN
+            -- Actualizar sucursal
+            UPDATE branch
+            SET
+                name       = _name,
+                country    = _country,
+                city       = _city,
+                address    = _address,
+                phone      = _phone,
+                status     = _status,
+                updated_at = NOW()
+            WHERE id = _id;
+
+            IF NOT FOUND THEN
+                RAISE EXCEPTION 'No existe una sucursal con id %', _id;
+            END IF;
+        ELSE
+            -- Insertar nueva sucursal
+            INSERT INTO branch(name, country, city, address, phone, status, created_at,updated_at)
+            VALUES (_name, _country, _city, _address, _phone, _status, NOW(),NOW());
+        END IF;
+
+    EXCEPTION
+        WHEN OTHERS THEN
+            RAISE EXCEPTION 'Error en sp_upsert_branch: %', SQLERRM;
+    END;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION fn_get_all_branches()
+RETURNS TABLE (
+    id         UUID,
+    name       VARCHAR,
+    country    VARCHAR,
+    city       VARCHAR,
+    address    VARCHAR,
+    phone      VARCHAR,
+    status     int,
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT id, name, country, city, address, phone, status, created_at, updated_at
+    FROM branch;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION fn_get_branch_by_id(
+    _id UUID
 )
 RETURNS TABLE (
     id         UUID,
@@ -174,123 +389,142 @@ RETURNS TABLE (
     city       VARCHAR,
     address    VARCHAR,
     phone      VARCHAR,
-    status     VARCHAR,
+    status     int,
     created_at TIMESTAMP,
     updated_at TIMESTAMP
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
-    IF _id IS NOT NULL THEN
-        UPDATE branch
-        SET
-            name       = _name,
-            country    = _country,
-            city       = _city,
-            address    = _address,
-            phone      = _phone,
-            status     = _status,
-            updated_at = NOW()
-        WHERE id = _id;
-    ELSE
-        INSERT INTO branch(name, country, city, address, phone, status)
-        VALUES (_name, _country, _city, _address, _phone, _status)
-        RETURNING id, name, country, city, address, phone, status, created_at, updated_at
-        INTO id, name, country, city, address, phone, status, created_at, updated_at;
-        RETURN NEXT;
-        RETURN;
-    END IF;
-
     RETURN QUERY
     SELECT id, name, country, city, address, phone, status, created_at, updated_at
     FROM branch
-    WHERE id = COALESCE(_id, id);
+    WHERE id = _id;
+END;
+$$;
+
+CREATE OR REPLACE PROCEDURE sp_delete_branch(
+    IN _id UUID
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    BEGIN
+        UPDATE branch
+        SET status = 0,
+        updated_at = NOW()
+        WHERE id = _id;
+
+        IF NOT FOUND THEN
+            RAISE EXCEPTION 'No existe una sucursal con id %', _id;
+        END IF;
+
+    EXCEPTION
+        WHEN OTHERS THEN
+            RAISE EXCEPTION 'Error en sp_delete_branch: %', SQLERRM;
+    END;
 END;
 $$;
 
 
--- 2.2. Función: Upsert POS en pos (retorna fila completa)
---       Si _id IS NULL → INSERT + RETURNING.
---       Si _id NO ES NULL → UPDATE + RETURN QUERY.
-CREATE OR REPLACE FUNCTION fn_upsert_pos(
-    _id        UUID,
-    _name      VARCHAR,
-    _branch_id UUID
+
+-- 2.2. SP: Upsert POS en pos 
+CREATE OR REPLACE PROCEDURE sp_upsert_pos(
+    IN _id        UUID,
+    IN _name      VARCHAR,
+    IN _branch_id UUID,
+    IN _status    INT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    BEGIN
+        IF _id IS NOT NULL THEN
+            -- Actualizar POS existente
+            UPDATE pos
+            SET
+                name       = _name,
+                branch_id  = _branch_id,
+                status     = _status,
+                updated_at = NOW()
+            WHERE id = _id;
+
+            IF NOT FOUND THEN
+                RAISE EXCEPTION 'No existe un POS con id %', _id;
+            END IF;
+        ELSE
+            -- Insertar nuevo POS
+            INSERT INTO pos(name, branch_id, status, created_at, updated_at)
+            VALUES (_name, _branch_id, _status, NOW(), NOW());
+        END IF;
+
+    EXCEPTION
+        WHEN OTHERS THEN
+            RAISE EXCEPTION 'Error en sp_upsert_pos: %', SQLERRM;
+    END;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION fn_get_all_pos()
+RETURNS TABLE (
+    id         UUID,
+    name       VARCHAR,
+    branch_id  UUID,
+    status     INT,
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT id, name, branch_id, status, created_at, updated_at
+    FROM pos;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION fn_get_pos_by_id(
+    _id UUID
 )
 RETURNS TABLE (
     id         UUID,
     name       VARCHAR,
     branch_id  UUID,
+    status     INT,
     created_at TIMESTAMP,
     updated_at TIMESTAMP
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
-    IF _id IS NOT NULL THEN
-        UPDATE pos
-        SET
-            name       = _name,
-            branch_id  = _branch_id,
-            updated_at = NOW()
-        WHERE id = _id;
-    ELSE
-        INSERT INTO pos(name, branch_id)
-        VALUES (_name, _branch_id)
-        RETURNING id, name, branch_id, created_at, updated_at
-        INTO id, name, branch_id, created_at, updated_at;
-        RETURN NEXT;
-        RETURN;
-    END IF;
-
     RETURN QUERY
-    SELECT id, name, branch_id, created_at, updated_at
+    SELECT id, name, branch_id, status, created_at, updated_at
     FROM pos
-    WHERE id = COALESCE(_id, id);
+    WHERE id = _id;
 END;
 $$;
 
-
--- 2.3. Función: Upsert Employee en employee (retorna fila completa)
---       Si _id IS NULL → INSERT + RETURNING.
---       Si _id NO ES NULL → UPDATE + RETURN QUERY.
-CREATE OR REPLACE FUNCTION fn_upsert_employee(
-    _id         UUID,
-    _first_name VARCHAR,
-    _last_name  VARCHAR,
-    _role       VARCHAR
-)
-RETURNS TABLE (
-    id         UUID,
-    first_name VARCHAR,
-    last_name  VARCHAR,
-    role       VARCHAR,
-    created_at TIMESTAMP,
-    updated_at TIMESTAMP
+CREATE OR REPLACE PROCEDURE sp_delete_pos(
+    IN _id UUID
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
-    IF _id IS NOT NULL THEN
-        UPDATE employee
-        SET
-            first_name = _first_name,
-            last_name  = _last_name,
-            role       = _role,
-            updated_at = NOW()
+    BEGIN
+        UPDATE pos
+        SET status = 0, updated_at = NOW()
         WHERE id = _id;
-    ELSE
-        INSERT INTO employee(first_name, last_name, role)
-        VALUES (_first_name, _last_name, _role)
-        RETURNING id, first_name, last_name, role, created_at, updated_at
-        INTO id, first_name, last_name, role, created_at, updated_at;
-        RETURN NEXT;
-        RETURN;
-    END IF;
 
-    RETURN QUERY
-    SELECT id, first_name, last_name, role, created_at, updated_at
-    FROM employee
-    WHERE id = COALESCE(_id, id);
+        IF NOT FOUND THEN
+            RAISE EXCEPTION 'No existe un POS con id %', _id;
+        END IF;
+
+    EXCEPTION
+        WHEN OTHERS THEN
+            RAISE EXCEPTION 'Error en sp_delete_pos: %', SQLERRM;
+    END;
 END;
 $$;
+
+
+-- 2.3. SP: Upsert Employee en employee
