@@ -99,6 +99,9 @@ entity Employee {
   --
   first_name : nvarchar(50)
   last_name : nvarchar(50)
+  phone : nvarchar(50)
+  start_date: datetime
+  end_date: datetime 'Puede ser NULL si aún trabaja'
   status : int
   created_at : datetime
   updated_at : datetime
@@ -201,6 +204,7 @@ entity User {
   username : nvarchar(50)
   password : nvarchar(50)     /'Almacenar hash de la contraseña'/
   role_id : int <<FK>> 
+  employee_id : int <<FK>> 
   status : int
   created_at : datetime
   updated_at : datetime
@@ -258,7 +262,7 @@ entity Sale {
   * id : int <<PK>>
   --
   date : datetime
-  user_id : int <<FK>> 
+  employee_id : int <<FK>> /' cashier_id '/
   total : decimal
   customer_id : int <<FK>> 
   receipt_type_id : int <<FK>> 
@@ -363,7 +367,7 @@ entity CashRegister_operation {
   mount: decimal
   cashRegister_id : int <<FK>> 
   movement_type_id: int <<FK>>
-  user_id: int <<FK>>
+  employee_id: int <<FK>>
   description : nvarchar
   created_at : datetime
   updated_at : datetime
@@ -399,7 +403,7 @@ entity Shift {
 entity AuditLog {
   * id : int <<PK>>
   --
-  user_id : int <<FK>>
+  employee_id : int <<FK>>
   action : nvarchar(50)
   entity_name : nvarchar(50)
   entity_id : int
@@ -528,7 +532,10 @@ POS "1" -- "0..*" CashRegister
 
 ' Un empleado atiende muchas órdenes.
 Employee "1" -- "0..*" Order
-
+Employee "1" -- "1" User
+Employee "1" -- "0..*" Sale
+' Una operación de caja es realizada por un usuario.
+Employee "1" -- "0..*" CashRegister_operation : on_discount
 ' Un cliente puede generar muchas ventas.
 Customer "1" -- "0..*" Sale
 
@@ -551,8 +558,7 @@ Role "1" -- "0..*" User
 Role "1" -- "0..*" Role_permission : has
 Permission "1" -- "0..*" Role_permission : assigned_to
 
-' Un usuario puede registrar muchas ventas.
-User "1" -- "0..*" Sale
+
 
 ' Un comprobante se asocia a muchas ventas.
 Receipt_type "1" -- "0..*" Sale
@@ -601,15 +607,14 @@ Supplier "1" -- "0..*" Product : supplies
 Sale "1" -- "0..*" Discount : has
 
 ' Un usuario realiza acciones que se registran en el log de auditoría.
-User "1" -- "0..*" AuditLog : performs
+Employee "1" -- "0..*" AuditLog : performs
 AuditLog "1" -- "0..1" Product : on_product
 AuditLog "1" -- "0..1" Sale : on_sale
 AuditLog "1" -- "0..1" Order : on_order
 AuditLog "1" -- "0..1" Inventory : on_inventory
 AuditLog "1" -- "0..1" Discount : on_discount
 
-' Una operación de caja es realizada por un usuario.
-User "1" -- "0..*" CashRegister_operation : on_discount
+
 
 Product "1" -- "0..*" Product_tax : taxed_by
 Tax "1" -- "0..*" Product_tax : applies_to

@@ -85,6 +85,9 @@ CREATE TABLE employee (
     id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     first_name    VARCHAR(50) NOT NULL,
     last_name     VARCHAR(50) NOT NULL,
+    phone         VARCHAR(50) NOT NULL,
+    start_date    TIMESTAMP NOT NULL DEFAULT NOW(),
+    end_date      TIMESTAMP,
     status        INT,
     created_at    TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at    TIMESTAMP NOT NULL DEFAULT NOW()
@@ -166,6 +169,7 @@ CREATE TABLE user_system (
     username      VARCHAR(50) NOT NULL,
     password      VARCHAR(50) NOT NULL,
     role_id       UUID NOT NULL REFERENCES role(id),
+    employee_id   UUID NOT NULL REFERENCES employee(id),
     status        INT,
     created_at    TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at    TIMESTAMP NOT NULL DEFAULT NOW()
@@ -371,7 +375,7 @@ CREATE TABLE role_permission (
 CREATE TABLE sale (
     id                 UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     date               TIMESTAMP NOT NULL,
-    user_id            UUID NOT NULL REFERENCES user_system(id),
+    employee_id        UUID NOT NULL REFERENCES employee(id),
     total              DECIMAL NOT NULL,
     customer_id        UUID REFERENCES customer(id),
     receipt_type_id    UUID NOT NULL REFERENCES receipt_type(id),
@@ -450,7 +454,7 @@ CREATE TABLE cash_register_operation (
     mount               DECIMAL NOT NULL,
     cash_register_id    UUID NOT NULL REFERENCES cash_register(id),
     movement_type_id    UUID NOT NULL REFERENCES movement_type(id),
-    user_id             UUID NOT NULL REFERENCES user_system(id),
+    employee_id         UUID NOT NULL REFERENCES employee(id),
     description         TEXT,
     created_at          TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at          TIMESTAMP NOT NULL DEFAULT NOW()
@@ -474,7 +478,7 @@ CREATE TABLE shift (
 -- =======================
 CREATE TABLE audit_log (
     id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id       UUID NOT NULL REFERENCES user_system(id),
+    employee_id     UUID NOT NULL REFERENCES employee(id),
     action        VARCHAR(50) NOT NULL,
     entity_name   VARCHAR(50) NOT NULL,
     entity_id     UUID NOT NULL,
