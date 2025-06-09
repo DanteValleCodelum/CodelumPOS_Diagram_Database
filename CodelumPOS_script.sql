@@ -465,10 +465,10 @@ CREATE TABLE cash_register_operation (
 -- =======================
 CREATE TABLE shift (
     id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    branch_id     UUID NOT NULL REFERENCES branch(id),
+    name          VARCHAR(50),
     start_time    TIMESTAMP NOT NULL,
     end_time      TIMESTAMP NOT NULL,
-    status        VARCHAR(50),
+    status        INT,
     created_at    TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at    TIMESTAMP NOT NULL DEFAULT NOW()
 );

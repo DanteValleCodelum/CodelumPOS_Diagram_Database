@@ -391,10 +391,10 @@ entity Discount {
 entity Shift {
   * id : int <<PK>>
   --
-  branch_id : int <<FK>>
+  name : nvarchar(50)
   start_time : datetime
   end_time : datetime
-  status : nvarchar(50) /'open, closed'/
+  status : int /'open, closed'/
   created_at : datetime
   updated_at : datetime
 }
@@ -612,7 +612,7 @@ AuditLog "1" -- "0..1" Product : on_product
 AuditLog "1" -- "0..1" Sale : on_sale
 AuditLog "1" -- "0..1" Order : on_order
 AuditLog "1" -- "0..1" Inventory : on_inventory
-AuditLog "1" -- "0..1" Discount : on_discount
+'AuditLog "1" -- "0..1" Discount : on_discount
 
 
 

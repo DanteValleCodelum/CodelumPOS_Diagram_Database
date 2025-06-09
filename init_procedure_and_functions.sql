@@ -3,8 +3,6 @@
 -- =========================================
 
 -- 1.1. Procedure: Upsert User en user_system 
---       Si _id IS NULL → hace INSERT y devuelve el registro nuevo.
---       Si _id NO ES NULL → hace UPDATE y devuelve el registro actualizado.
 CREATE OR REPLACE PROCEDURE sp_upsert_user_system(
     IN _id       UUID,
     IN _username VARCHAR,
@@ -216,8 +214,6 @@ $$;
 
 
 -- 1.4. SP: Upsert Permission en permission
---       Si _id IS NULL → INSERT + RETURNING.
---       Si _id NO ES NULL → UPDATE + RETURN QUERY.
 CREATE OR REPLACE PROCEDURE sp_upsert_permission(
     IN _id          UUID,
     IN _name        VARCHAR,
@@ -311,8 +307,256 @@ BEGIN
 END;
 $$;
 
+-- 1.5. SP: SHIFT, turnos
+CREATE OR REPLACE PROCEDURE sp_upsert_shift(
+    IN _id         UUID,
+    IN _name       VARCHAR,
+    IN _start_time TIMESTAMP,
+    IN _end_time   TIMESTAMP,
+    IN _status     INT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    BEGIN
+        IF _id IS NOT NULL THEN
+            -- Actualizar turno existente
+            UPDATE shift
+            SET
+                name       = _name,
+                start_time = _start_time,
+                end_time   = _end_time,
+                status     = _status,
+                updated_at = NOW()
+            WHERE id = _id;
+        ELSE
+            -- Insertar nuevo turno
+            INSERT INTO shift(name, start_time, end_time, status, created_at)
+            VALUES (_name, _start_time, _end_time, _status, NOW());
+        END IF;
+    EXCEPTION
+        WHEN OTHERS THEN
+            RAISE EXCEPTION 'Error en sp_upsert_shift: %', SQLERRM;
+    END;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION fn_get_all_shifts()
+RETURNS TABLE (
+    id         UUID,
+    name       VARCHAR,
+    start_time TIMESTAMP,
+    end_time   TIMESTAMP,
+    status     INT,
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        id, name, start_time, end_time, status, created_at, updated_at
+    FROM 
+        shift
+    WHERE 
+        status = 1;  -- solo turnos activos
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION fn_get_shift_by_id(
+    _id UUID
+)
+RETURNS TABLE (
+    id         UUID,
+    name       VARCHAR,
+    start_time TIMESTAMP,
+    end_time   TIMESTAMP,
+    status     INT,
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        id, name, start_time, end_time, status, created_at, updated_at
+    FROM 
+        shift
+    WHERE 
+        id = _id 
+        AND status = 1;  -- solo si está activo
+END;
+$$;
+
+-- 1.5. SP: Employee_shift, turnos
+CREATE OR REPLACE PROCEDURE sp_upsert_employee_shift(
+    IN _id           UUID,
+    IN _employee_id  UUID,
+    IN _shift_id     UUID
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    IF _id IS NOT NULL THEN
+        -- Actualizar relación existente
+        UPDATE employee_shift
+        SET
+            employee_id = _employee_id,
+            shift_id    = _shift_id,
+            updated_at  = NOW()
+        WHERE id = _id;
+    ELSE
+        -- Insertar nueva relación
+        INSERT INTO employee_shift(employee_id, shift_id, created_at)
+        VALUES (_employee_id, _shift_id, NOW());
+    END IF;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION fn_get_all_employee_shifts()
+RETURNS TABLE (
+    id           UUID,
+    employee_id  UUID,
+    shift_id     UUID,
+    created_at   TIMESTAMP,
+    updated_at   TIMESTAMP
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT id, employee_id, shift_id, created_at, updated_at
+    FROM employee_shift;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION fn_get_employee_shift_by_id(
+    _id UUID
+)
+RETURNS TABLE (
+    id           UUID,
+    employee_id  UUID,
+    shift_id     UUID,
+    created_at   TIMESTAMP,
+    updated_at   TIMESTAMP
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT id, employee_id, shift_id, created_at, updated_at
+    FROM employee_shift
+    WHERE id = _id;
+END;
+$$;
+
+CREATE OR REPLACE PROCEDURE sp_delete_employee_shift(
+    IN _id UUID
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    DELETE FROM employee_shift
+    WHERE id = _id;
+END;
+$$;
+
+-- 1.6. SP: Employee
+CREATE OR REPLACE PROCEDURE sp_upsert_employee(
+    IN _id          UUID,
+    IN _first_name  VARCHAR,
+    IN _last_name   VARCHAR,
+    IN _phone       VARCHAR,
+    IN _start_date  TIMESTAMP,
+    IN _end_date    TIMESTAMP,
+    IN _status      INT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    IF _id IS NOT NULL THEN
+        -- Actualizar empleado existente
+        UPDATE employee
+        SET
+            first_name = _first_name,
+            last_name  = _last_name,
+            phone      = _phone,
+            start_date = _start_date,
+            end_date   = _end_date,
+            status     = _status,
+            updated_at = NOW()
+        WHERE id = _id;
+    ELSE
+        -- Insertar nuevo empleado
+        INSERT INTO employee(first_name, last_name, phone, start_date, end_date, status, created_at)
+        VALUES (_first_name, _last_name, _phone, _start_date, _end_date, _status, NOW());
+    END IF;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION fn_get_all_employees()
+RETURNS TABLE (
+    id          UUID,
+    first_name  VARCHAR,
+    last_name   VARCHAR,
+    phone       VARCHAR,
+    start_date  TIMESTAMP,
+    end_date    TIMESTAMP,
+    status      INT,
+    created_at  TIMESTAMP,
+    updated_at  TIMESTAMP
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT id, first_name, last_name, phone, start_date, end_date, status, created_at, updated_at
+    FROM employee;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION fn_get_employee_by_id(
+    _id UUID
+)
+RETURNS TABLE (
+    id          UUID,
+    first_name  VARCHAR,
+    last_name   VARCHAR,
+    phone       VARCHAR,
+    start_date  TIMESTAMP,
+    end_date    TIMESTAMP,
+    status      INT,
+    created_at  TIMESTAMP,
+    updated_at  TIMESTAMP
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT id, first_name, last_name, phone, start_date, end_date, status, created_at, updated_at
+    FROM employee
+    WHERE id = _id;
+END;
+$$;
+
+CREATE OR REPLACE PROCEDURE sp_delete_employee(
+    IN _id UUID
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    UPDATE employee
+    SET
+        status     = 0,
+        updated_at = NOW()
+    WHERE id = _id;
+END;
+$$;
+
 -- ================================================
--- 2. CRUD Sucursales y Upserts Relacionados (POS, Employees)
+-- 2. CRUD BRANCHES, sucursales y Upserts Relacionados (POS, Employees)
 -- ================================================
 
 -- 2.1. SP: Upsert Branch en branch
