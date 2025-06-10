@@ -374,7 +374,7 @@ CREATE TABLE role_permission (
 -- =======================
 CREATE TABLE sale (
     id                 UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    date               TIMESTAMP NOT NULL,
+    sale_date          TIMESTAMP NOT NULL,
     employee_id        UUID NOT NULL REFERENCES employee(id),
     total              DECIMAL NOT NULL,
     customer_id        UUID REFERENCES customer(id),
@@ -386,6 +386,7 @@ CREATE TABLE sale (
     discount_id        UUID REFERENCES discount(id),
     credit_term        VARCHAR(10),
     tax_id             UUID REFERENCES tax(id),
+    status             INT,
     created_at         TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at         TIMESTAMP NOT NULL DEFAULT NOW()
 );
@@ -424,7 +425,7 @@ CREATE TABLE reservation (
     table_id           UUID NOT NULL REFERENCES table_restaurant(id),
     reservation_date   TIMESTAMP NOT NULL,
     number_of_people   INT NOT NULL,
-    status             VARCHAR(50),
+    status             INT,
     note               VARCHAR(50),
     created_at         TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at         TIMESTAMP NOT NULL DEFAULT NOW()

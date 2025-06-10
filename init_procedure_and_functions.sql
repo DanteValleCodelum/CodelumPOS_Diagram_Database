@@ -307,7 +307,7 @@ BEGIN
 END;
 $$;
 
--- 1.5. SP: SHIFT, turnos
+-- 1.5. SP: SHIFT,employee_shift turnos
 CREATE OR REPLACE PROCEDURE sp_upsert_shift(
     IN _id         UUID,
     IN _name       VARCHAR,
@@ -390,7 +390,7 @@ BEGIN
 END;
 $$;
 
--- 1.5. SP: Employee_shift, turnos
+-- 1.5.1 SP: Employee_shift, turnos
 CREATE OR REPLACE PROCEDURE sp_upsert_employee_shift(
     IN _id           UUID,
     IN _employee_id  UUID,
@@ -556,7 +556,7 @@ END;
 $$;
 
 -- ================================================
--- 2. CRUD BRANCHES, sucursales y Upserts Relacionados (POS, Employees)
+-- 2. CRUD BRANCHES,POS,Tables, reservations sucursales 
 -- ================================================
 
 -- 2.1. SP: Upsert Branch en branch
@@ -672,7 +672,7 @@ $$;
 
 
 
--- 2.2. SP: Upsert POS en pos 
+-- 2.2. POS crud
 CREATE OR REPLACE PROCEDURE sp_upsert_pos(
     IN _id        UUID,
     IN _name      VARCHAR,
@@ -769,9 +769,177 @@ BEGIN
     END;
 END;
 $$;
+-- 2.3. SP: CRUD Table_Restaurant
+CREATE OR REPLACE PROCEDURE sp_upsert_table_restaurant(
+    IN _id       UUID,
+    IN _number   INT,
+    IN _capacity INT,
+    IN _status   VARCHAR
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    BEGIN
+        IF _id IS NOT NULL THEN
+            UPDATE table_restaurant
+            SET
+                number     = _number,
+                capacity   = _capacity,
+                status     = _status,
+                updated_at = NOW()
+            WHERE id = _id;
+        ELSE
+            INSERT INTO table_restaurant(number, capacity, status, created_at, updated_at)
+            VALUES (_number, _capacity, _status, NOW(), NOW());
+        END IF;
+    EXCEPTION
+        WHEN OTHERS THEN
+            RAISE EXCEPTION 'Error en sp_upsert_table_restaurant: %', SQLERRM;
+    END;
+END;
+$$;
 
+CREATE OR REPLACE FUNCTION fn_get_all_table_restaurants()
+RETURNS TABLE (
+    id         UUID,
+    number     INT,
+    capacity   INT,
+    status     VARCHAR,
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT id, number, capacity, status, created_at, updated_at
+    FROM table_restaurant;
+END;
+$$;
 
--- 3. SP: CRUD Warehouse
+CREATE OR REPLACE FUNCTION fn_get_table_restaurant_by_id(_id UUID)
+RETURNS TABLE (
+    id         UUID,
+    number     INT,
+    capacity   INT,
+    status     VARCHAR,
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT id, number, capacity, status, created_at, updated_at
+    FROM table_restaurant
+    WHERE id = _id;
+END;
+$$;
+
+CREATE OR REPLACE PROCEDURE sp_delete_table_restaurant(IN _id UUID)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    UPDATE table_restaurant
+    SET status = 'INACTIVE', updated_at = NOW()
+    WHERE id = _id;
+END;
+$$;
+
+-- 2.3. SP: CRUD reservation
+CREATE OR REPLACE PROCEDURE sp_upsert_reservation(
+    IN _id UUID,
+    IN _customer_id UUID,
+    IN _table_id UUID,
+    IN _reservation_date TIMESTAMP,
+    IN _number_of_people INT,
+    IN _status INT,
+    IN _note VARCHAR
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    IF _id IS NOT NULL THEN
+        UPDATE reservation
+        SET
+            customer_id = _customer_id,
+            table_id = _table_id,
+            reservation_date = _reservation_date,
+            number_of_people = _number_of_people,
+            status = _status,
+            note = _note,
+            updated_at = NOW()
+        WHERE id = _id;
+    ELSE
+        INSERT INTO reservation (
+            customer_id, table_id, reservation_date, number_of_people,
+            status, note, created_at, updated_at
+        )
+        VALUES (
+            _customer_id, _table_id, _reservation_date, _number_of_people,
+            _status, _note, NOW(), NOW()
+        );
+    END IF;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION fn_get_all_reservations()
+RETURNS TABLE (
+    id UUID,
+    customer_id UUID,
+    table_id UUID,
+    reservation_date TIMESTAMP,
+    number_of_people INT,
+    status INT,
+    note VARCHAR,
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT * FROM reservation;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION fn_get_reservation_by_id(_id UUID)
+RETURNS TABLE (
+    id UUID,
+    customer_id UUID,
+    table_id UUID,
+    reservation_date TIMESTAMP,
+    number_of_people INT,
+    status INT,
+    note VARCHAR,
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT * FROM reservation WHERE id = _id;
+END;
+$$;
+
+CREATE OR REPLACE PROCEDURE sp_delete_reservation(IN _id UUID)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    UPDATE reservation
+    SET status = 0, updated_at = NOW()
+    WHERE id = _id;
+END;
+$$;
+
+-- =========================================
+-- 3. CRUD Sales, ventas, descuentos, impuesto
+-- =========================================
+
+-- =========================================
+-- 3. CRUD Warehouse
+-- =========================================
 CREATE OR REPLACE PROCEDURE sp_upsert_warehouse(
     IN _id                  UUID,
     IN _name                VARCHAR,

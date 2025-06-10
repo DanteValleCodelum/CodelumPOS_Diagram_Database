@@ -261,7 +261,7 @@ entity Sales_channel {
 entity Sale {
   * id : int <<PK>>
   --
-  date : datetime
+  sale_date : datetime
   employee_id : int <<FK>> /' cashier_id '/
   total : decimal
   customer_id : int <<FK>> 
@@ -273,6 +273,7 @@ entity Sale {
   discount_id: int <<FK>> 
   creditTerm: nvarchar(10) /'plazo credito: Se omite si viene vacío, pero es de condición obligatoria cuando la condición de la venta es crédito'/
   tax_id: int <<FK>> 
+  status: int
   created_at : datetime
   updated_at : datetime
 }
