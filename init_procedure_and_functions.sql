@@ -37,52 +37,6 @@ BEGIN
 END;
 $$;
 
-CREATE OR REPLACE FUNCTION fn_get_all_user_system()
-RETURNS TABLE (
-    id         UUID,
-    username   VARCHAR,
-    password   VARCHAR,
-    role_id    UUID,
-    status     INT,
-    created_at TIMESTAMP,
-    updated_at TIMESTAMP
-)
-LANGUAGE plpgsql
-AS $$
-BEGIN
-    RETURN QUERY
-    SELECT 
-        id, username, password, role_id, status, created_at, updated_at
-    FROM 
-        user_system;
-END;
-$$;
-
-CREATE OR REPLACE FUNCTION fn_get_user_system_by_id(
-    _id UUID
-)
-RETURNS TABLE (
-    id         UUID,
-    username   VARCHAR,
-    password   VARCHAR,
-    role_id    UUID,
-    status     INT,
-    created_at TIMESTAMP,
-    updated_at TIMESTAMP
-)
-LANGUAGE plpgsql
-AS $$
-BEGIN
-    RETURN QUERY
-    SELECT 
-        id, username, password, role_id, status, created_at, updated_at
-    FROM 
-        user_system
-    WHERE 
-        id = _id;
-END;
-$$;
-
 CREATE OR REPLACE PROCEDURE sp_delete_user_system(
     IN _id UUID
 )
@@ -936,9 +890,168 @@ $$;
 -- =========================================
 -- 3. CRUD Sales, ventas, descuentos, impuesto
 -- =========================================
+-- 3.1. CRUD Sales
+CREATE OR REPLACE PROCEDURE sp_upsert_sale(
+    IN _id                 UUID,
+    IN _sale_date          TIMESTAMP,
+    IN _employee_id        UUID,
+    IN _total              DECIMAL,
+    IN _customer_id        UUID,
+    IN _receipt_type_id    UUID,
+    IN _payment_method_id  UUID,
+    IN _sales_channel_id   UUID,
+    IN _pos_id             UUID,
+    IN _sale_condition_id  UUID,
+    IN _discount_id        UUID,
+    IN _credit_term        VARCHAR(10),
+    IN _tax_id             UUID,
+    IN _status             INT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    IF _id IS NOT NULL THEN
+        UPDATE sale
+        SET
+            sale_date         = _sale_date,
+            employee_id       = _employee_id,
+            total             = _total,
+            customer_id       = _customer_id,
+            receipt_type_id   = _receipt_type_id,
+            payment_method_id = _payment_method_id,
+            sales_channel_id  = _sales_channel_id,
+            pos_id            = _pos_id,
+            sale_condition_id = _sale_condition_id,
+            discount_id       = _discount_id,
+            credit_term       = _credit_term,
+            tax_id            = _tax_id,
+            status            = _status,
+            updated_at        = NOW()
+        WHERE id = _id;
+    ELSE
+        INSERT INTO sale(
+            sale_date, employee_id, total, customer_id, receipt_type_id,
+            payment_method_id, sales_channel_id, pos_id, sale_condition_id,
+            discount_id, credit_term, tax_id, status, created_at
+        )
+        VALUES (
+            _sale_date, _employee_id, _total, _customer_id, _receipt_type_id,
+            _payment_method_id, _sales_channel_id, _pos_id, _sale_condition_id,
+            _discount_id, _credit_term, _tax_id, _status, NOW()
+        );
+    END IF;
+END;
+$$;
 
+CREATE OR REPLACE FUNCTION fn_get_all_sales_by_status(_status INT)
+RETURNS TABLE (
+    id                 UUID,
+    sale_date          TIMESTAMP,
+    employee_id        UUID,
+    total              DECIMAL,
+    customer_id        UUID,
+    receipt_type_id    UUID,
+    payment_method_id  UUID,
+    sales_channel_id   UUID,
+    pos_id             UUID,
+    sale_condition_id  UUID,
+    discount_id        UUID,
+    credit_term        VARCHAR(10),
+    tax_id             UUID,
+    status             INT,
+    created_at         TIMESTAMP,
+    updated_at         TIMESTAMP
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT *
+    FROM sale
+    WHERE status = _status;
+END;
+$$;
+CREATE OR REPLACE FUNCTION fn_get_sale_by_id(_id UUID)
+RETURNS TABLE (
+    id                 UUID,
+    sale_date          TIMESTAMP,
+    employee_id        UUID,
+    total              DECIMAL,
+    customer_id        UUID,
+    receipt_type_id    UUID,
+    payment_method_id  UUID,
+    sales_channel_id   UUID,
+    pos_id             UUID,
+    sale_condition_id  UUID,
+    discount_id        UUID,
+    credit_term        VARCHAR(10),
+    tax_id             UUID,
+    status             INT,
+    created_at         TIMESTAMP,
+    updated_at         TIMESTAMP
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT *
+    FROM sale
+    WHERE id = _id;
+END;
+$$;
+
+CREATE OR REPLACE PROCEDURE sp_delete_sale(_id UUID)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    UPDATE sale
+    SET status = 0,
+        updated_at = NOW()
+    WHERE id = _id;
+END;
+$$;
+-- 3.2. CRUD Sales_condition
 -- =========================================
--- 3. CRUD Warehouse
+CREATE OR REPLACE PROCEDURE sp_upsert_sale_condition(
+    IN _id   UUID,
+    IN _name VARCHAR
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    IF _id IS NOT NULL THEN
+        UPDATE sale_condition
+        SET name = _name
+        WHERE id = _id;
+    ELSE
+        INSERT INTO sale_condition(name)
+        VALUES (_name);
+    END IF;
+END;
+$$;
+CREATE OR REPLACE FUNCTION fn_get_all_sale_conditions()
+RETURNS TABLE (
+    id   UUID,
+    name VARCHAR
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT id, name
+    FROM sale_condition;
+END;
+$$;
+CREATE OR REPLACE PROCEDURE sp_delete_sale_condition(_id UUID)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    DELETE FROM sale_condition
+    WHERE id = _id;
+END;
+$$;
+
+-- 9. CRUD Warehouse
 -- =========================================
 CREATE OR REPLACE PROCEDURE sp_upsert_warehouse(
     IN _id                  UUID,

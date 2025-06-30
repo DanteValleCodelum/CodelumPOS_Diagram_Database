@@ -277,7 +277,7 @@ entity Sale {
   created_at : datetime
   updated_at : datetime
 }
-entity Sale_order_details {
+entity Sale_order {
   * id : int <<PK>>
   --
   sale_id: int <<FK>> 
@@ -347,7 +347,7 @@ entity Tax {
 ' MÓDULO DE CAJAS
 
 ' Caja principal
-entity CashRegister {
+entity Cash_register {
   * id : int <<PK>>
   --
   name : nvarchar(50)
@@ -362,11 +362,11 @@ entity CashRegister {
 }
 
 ' (Apertura de caja)
-entity CashRegister_operation {
+entity Cash_register_operation {
   * id : int <<PK>>
   --
   mount: decimal
-  cashRegister_id : int <<FK>> 
+  Cash_register_id : int <<FK>> 
   movement_type_id: int <<FK>>
   employee_id: int <<FK>>
   description : nvarchar
@@ -456,7 +456,7 @@ entity Invoice {
   --
   batch_Id : int
   sale_id: int <<FK>>
-  cashRegister_id:int <<FK>>
+  Cash_register_id:int <<FK>>
   key: mvarchar(50) /'(si no se envía el API lo genera automáticamente y lo devuelve en la respuesta)'/
   consecutiveNumber : varchar(20)
   issueDate : datetime
@@ -522,12 +522,12 @@ GatewayCustomer "1" -- "0..*" GatewayTransactions
 GatewayPaymentMethods "1" -- "0..*" GatewayTransactions
 
 'RELACION FACTURACION
-CashRegister "1" -- "0..*" Invoice
+Cash_register "1" -- "0..*" Invoice
 ' Receipt_type "1" -- "0..*" Invoice
 IDType "1" -- "0..*" Customer
 Sale_condition "1" -- "0..*" Sale
-CashRegister "1" -- "0..*" CashRegister_operation
-POS "1" -- "0..*" CashRegister
+Cash_register "1" -- "0..*" Cash_register_operation
+POS "1" -- "0..*" Cash_register
 
 ' RELACIONES GENERALES ACTUALIZADAS
 
@@ -536,7 +536,7 @@ Employee "1" -- "0..*" Order
 Employee "1" -- "1" User
 Employee "1" -- "0..*" Sale
 ' Una operación de caja es realizada por un usuario.
-Employee "1" -- "0..*" CashRegister_operation : on_discount
+Employee "1" -- "0..*" Cash_register_operation : on_discount
 ' Un cliente puede generar muchas ventas.
 Customer "1" -- "0..*" Sale
 
@@ -575,7 +575,7 @@ Product "1" -- "0..*" Inventory_movement
 
 ' Un tipo de movimiento se usa en muchos movimientos.
 Movement_type "1" -- "0..*" Inventory_movement
-Movement_type "1" -- "0..*" CashRegister_operation
+Movement_type "1" -- "0..*" Cash_register_operation
 
 ' Canal de venta se vincula a muchas ventas.
 Sales_channel "1" -- "0..*" Sale
@@ -600,6 +600,7 @@ Product "1" -- "0..*" Detail_storage_type
 ' Relación entre Reservation y Customer/Table.
 Customer "1" -- "0..*" Reservation
 Table "1" -- "0..*" Reservation
+Table "1" -- "0..*" Order
 
 ' Un producto puede ser suministrado por muchos proveedores.
 Supplier "1" -- "0..*" Product : supplies
@@ -625,6 +626,6 @@ Employee "1" -- "0..*" Employee_Shift
 Shift "1" -- "0..*" Employee_Shift
 LoyaltyProgram "1" -- "0..*" Customer : has
 Sale "1" -- "0..*" Invoice : has
-Sale "1" -- "0..*" Sale_order_details
-Order "1" -- "0..*" Sale_order_details
+Sale "1" -- "0..*" Sale_order
+Order "1" -- "0..*" Sale_order
 @enduml

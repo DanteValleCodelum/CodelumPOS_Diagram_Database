@@ -392,9 +392,9 @@ CREATE TABLE sale (
 );
 
 -- =======================
--- Table: sale_order_details
+-- Table: Sale_order
 -- =======================
-CREATE TABLE sale_order_details (
+CREATE TABLE Sale_order (
     id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     sale_id       UUID NOT NULL REFERENCES sale(id),
     order_id      UUID NOT NULL REFERENCES orders(id),
