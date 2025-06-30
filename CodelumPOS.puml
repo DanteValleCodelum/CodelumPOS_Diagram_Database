@@ -350,30 +350,53 @@ entity Tax {
 entity Cash_register {
   * id : int <<PK>>
   --
-  name : nvarchar(50)
+  name : nvarchar(50) /'caja principal salon1'/ 
   pos_id : int <<FK>> 
-  openTime : datetime
-  closeTime : datetime
-  initialAmount : decimal /'Monto inicial, ej: $100'/ 
-  finalAmount : decimal /'Monto final, ej: $100'/ 
   description: nvarchar(50)
+  status: int
   created_at : datetime
   updated_at : datetime
 }
 
 ' (Apertura de caja)
-entity Cash_register_operation {
+entity Cash_register_session {
   * id : int <<PK>>
   --
-  mount: decimal
-  Cash_register_id : int <<FK>> 
-  movement_type_id: int <<FK>>
-  employee_id: int <<FK>>
-  description : nvarchar
+  cash_register_id : int<<FK>> /'caja principal salon1'/ 
+  employee_id : int <<FK>> 
+  opened_at : datetime
+  closed_at  : datetime
+  opening_amount  : decimal /'Monto inicial, ej: $100'/ 
+  closing_amount  : decimal /'Monto final, ej: $100'/ 
+  expected_balance  : decimal /'calculado al cerrar'/ 
+  discrepancy   : decimal /'diferencia (overage/shortage)'/ 
+  description: nvarchar(50)
+  status_session: nvarchar(50) 'Default OPEN'
   created_at : datetime
   updated_at : datetime
 }
 
+'Movimientos de caja SALE | INCOME | EXPENSE | REFUND
+entity Cash_register_movement {
+  * id : int <<PK>>
+  --
+  session_id : int <<FK>> 
+  movement_type_id: int <<FK>>
+  amount: decimal
+  description : nvarchar
+  created_at : datetime
+  updated_at : datetime
+}
+'(Opcional) Registro de aprobaciones de cierre con discrepancia
+entity Cash_register_session_approval {
+  * id : int <<PK>>
+  --
+  session_id : int <<FK>> 
+  approved_by: int <<FK>>
+  mount: decimal
+  approved_at : datetime
+  note : nvarchar(100)
+}
 ' Promociones y Descuentos
 entity Discount {
   * id : int <<PK>>
@@ -522,11 +545,14 @@ GatewayCustomer "1" -- "0..*" GatewayTransactions
 GatewayPaymentMethods "1" -- "0..*" GatewayTransactions
 
 'RELACION FACTURACION
-Cash_register "1" -- "0..*" Invoice
+Cash_register "1" -- "0..*" Cash_register_session
+Cash_register_session "1" -- "0..*" Cash_register_movement
+Cash_register_session "1" -- "0..*" Cash_register_session_approval
+Cash_register_movement "1" -- "0..*" Invoice
 ' Receipt_type "1" -- "0..*" Invoice
 IDType "1" -- "0..*" Customer
 Sale_condition "1" -- "0..*" Sale
-Cash_register "1" -- "0..*" Cash_register_operation
+
 POS "1" -- "0..*" Cash_register
 
 ' RELACIONES GENERALES ACTUALIZADAS
@@ -536,7 +562,7 @@ Employee "1" -- "0..*" Order
 Employee "1" -- "1" User
 Employee "1" -- "0..*" Sale
 ' Una operación de caja es realizada por un usuario.
-Employee "1" -- "0..*" Cash_register_operation : on_discount
+Employee "1" -- "0..*" Cash_register_session
 ' Un cliente puede generar muchas ventas.
 Customer "1" -- "0..*" Sale
 
@@ -575,7 +601,7 @@ Product "1" -- "0..*" Inventory_movement
 
 ' Un tipo de movimiento se usa en muchos movimientos.
 Movement_type "1" -- "0..*" Inventory_movement
-Movement_type "1" -- "0..*" Cash_register_operation
+Movement_type "1" -- "0..*" Cash_register_movement
 
 ' Canal de venta se vincula a muchas ventas.
 Sales_channel "1" -- "0..*" Sale

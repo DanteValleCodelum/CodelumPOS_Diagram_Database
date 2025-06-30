@@ -438,29 +438,46 @@ CREATE TABLE cash_register (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name            VARCHAR(50) NOT NULL,
     pos_id          UUID NOT NULL REFERENCES pos(id),
-    open_time       TIMESTAMP NOT NULL,
-    close_time      TIMESTAMP,
-    initial_amount  DECIMAL NOT NULL,
-    final_amount    DECIMAL,
     description     VARCHAR(50),
+    status          INT,
     created_at      TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at      TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE cash_register_session (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    cash_register_id UUID NOT NULL REFERENCES cash_register(id),
+    employee_id UUID NOT NULL REFERENCES employee(id),
+    opened_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    closed_at TIMESTAMP,
+    opening_amount NUMERIC(10,2) NOT NULL,
+    closing_amount NUMERIC(10,2),
+    expected_balance NUMERIC(10,2),  -- calculado al cerrar
+    discrepancy NUMERIC(10,2),       -- diferencia (overage/shortage)
+    status VARCHAR(20) DEFAULT 'OPEN',  -- OPEN | CLOSED | CANCELLED
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
 );
 
 -- =======================
 -- Table: cash_register_operation
 -- =======================
-CREATE TABLE cash_register_operation (
-    id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    mount               DECIMAL NOT NULL,
-    cash_register_id    UUID NOT NULL REFERENCES cash_register(id),
-    movement_type_id    UUID NOT NULL REFERENCES movement_type(id),
-    employee_id         UUID NOT NULL REFERENCES employee(id),
-    description         TEXT,
-    created_at          TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at          TIMESTAMP NOT NULL DEFAULT NOW()
+CREATE TABLE cash_movement (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    session_id UUID NOT NULL REFERENCES cash_register_session(id),
+    movement_type VARCHAR(20) NOT NULL, -- SALE | INCOME | EXPENSE | REFUND
+    description TEXT,
+    amount NUMERIC(10,2) NOT NULL,
+    performed_at TIMESTAMP DEFAULT NOW()
 );
-
+--(Opcional) Registro de aprobaciones de cierre con discrepancia
+CREATE TABLE session_approval (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    session_id UUID NOT NULL REFERENCES cash_register_session(id),
+    approved_by UUID NOT NULL REFERENCES employee_id(id),
+    approved_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    note TEXT
+);
 -- =======================
 -- Table: shift
 -- =======================
