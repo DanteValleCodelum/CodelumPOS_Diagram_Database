@@ -12,6 +12,7 @@ entity Warehouse {
   shortname : nvarchar(50)
   parent_warehouse_id : int <<<FK>> > /'Para reabastecimiento de otro almacén'/
   branch_id : int <<<FK>> >  /'Ubicación o dirección del almacén'/
+  is_deleted : boolean
   created_at : datetime
   updated_at : datetime
 }
@@ -20,9 +21,9 @@ entity Storage_type {
   * id : int <<PK>>
   --
   name : nvarchar(50)
-  maximumWeight : nvarchar(50)  /'Kg, Libras, etc.'/
-  allowNewProduct : boolean /'Si la ubicación está vacía, permite productos mezclados'/
-  status : nvarchar(50)
+  maximum_Weight : nvarchar(50)  /'Kg, Libras, etc.'/
+  allow_new_product : boolean /'Si la ubicación está vacía, permite productos mezclados'/
+  is_deleted : boolean
   created_at : datetime
   updated_at : datetime
 }
@@ -33,6 +34,7 @@ entity Detail_storage_type {
   warehouseCategory_id : int <<<FK>> > 
   product_id : int <<<FK>> > 
   quantity : int
+  is_deleted : boolean
   created_at : datetime
   updated_at : datetime
 }
@@ -46,7 +48,7 @@ entity Branch {
   city : nvarchar(50)       
   address : nvarchar(50) 
   phone : nvarchar(50)
-  status : nvarchar(50)
+  is_deleted : boolean
   created_at : datetime
   updated_at : datetime
 }
@@ -57,7 +59,7 @@ entity POS {
   --
   name : nvarchar(50)           /'Tipo de punto de venta (restaurante, RestoBar, etc.)'/
   branch_id : int <<<FK>> > 
-  status : INT
+  is_deleted : boolean
   created_at : datetime
   updated_at : datetime
 }
@@ -78,6 +80,7 @@ entity Customer {
   lastname : nvarchar(50)
   phone : nvarchar(50)
   email : nvarchar(50)
+  is_deleted : boolean
   created_at : datetime
   updated_at : datetime
 }
@@ -88,7 +91,7 @@ entity Table {
   --
   number : int
   capacity : int
-  status : nvarchar(50)
+  is_deleted : boolean 
   created_at : datetime
   updated_at : datetime
 }
@@ -102,7 +105,7 @@ entity Employee {
   phone : nvarchar(50)
   start_date: datetime
   end_date: datetime 'Puede ser NULL si aún trabaja'
-  status : int
+  is_deleted : boolean
   created_at : datetime
   updated_at : datetime
 }
@@ -118,7 +121,7 @@ entity Order {
   total : decimal
   order_type_id : int <<FK>> 
   order_status : nvarchar(50) /'pendiente, en preparación, servida, cancelada'/
-  status : nvarchar(50) /'kitchen_status'/
+  is_deleted : boolean
   created_at : datetime
   updated_at : datetime
 }
@@ -129,6 +132,7 @@ entity Order_type {
   --
   name : nvarchar(50)
   description : nvarchar(50)
+  is_deleted : boolean
   created_at : datetime
   updated_at : datetime
 }
@@ -139,8 +143,11 @@ entity Order_detail {
   --
   order_id : int <<FK>> 
   product_id : int <<FK>> 
+  product_price_id : int <<FK>> 
+  unit_price : int
   quantity : int
   subtotal : decimal
+  is_deleted : boolean
   created_at : datetime
   updated_at : datetime
 }
@@ -151,22 +158,21 @@ entity Product_type {
   --
   name : nvarchar(50)
   description : nvarchar(50)
+  is_deleted : boolean
   created_at : datetime
   updated_at : datetime
 }
 
-' PRODUCTO ==================
+' PRODUCTO 
 entity Product {
   * id : int <<PK>>
   --
   name : nvarchar(50)
   description : nvarchar(50)
   image_uri : nvarchar(50)
-  cost_price : decimal
-  utility : decimal
-  final_price : decimal
   supplier_id : int <<FK>> 
   product_type_id : int <<FK>> 
+  is_deleted : boolean
   created_at : datetime
   updated_at : datetime
 }
@@ -177,6 +183,33 @@ entity Product_tax {
   --
   product_id : int <<FK>> 
   tax_id : int <<FK>> 
+  is_deleted : boolean
+  created_at : datetime
+  updated_at : datetime
+}
+
+' Precio
+entity Price {
+  * id : int <<PK>>
+  --
+  name : nvarchar(50) /'Precio Público', 'Happy Hour'/
+  cost_price : decimal(10,2) /'precio de costo base'/
+  markup_pct : decimal(10,2)/'utilidad en % (e.g. 30.00)'/
+  tax_pct    : decimal(10,2)/'impuesto en % (e.g. 18.00)'/
+  final_price: decimal(10,2)/'precio calculado o fijo'/
+  is_deleted : boolean
+  created_at : datetime
+  updated_at : datetime
+}
+' Producto Precio 
+entity Product_price {
+  * id : int <<PK>>
+  --
+  product_id : int <<FK>> 
+  price_id : int <<FK>> 
+  valid_from : datetime /'inicio de vigencia de este precio'/
+  valid_to   : datetime /'fin de vigencia (NULL = vigente)'/
+  is_deleted : boolean
   created_at : datetime
   updated_at : datetime
 }
@@ -193,6 +226,7 @@ entity Inventory {
   current_stock : int
   alert_high_stock : int
   alert_low_stock : int
+  is_deleted : boolean
   created_at : datetime
   updated_at : datetime
 }
@@ -205,7 +239,7 @@ entity User {
   password : nvarchar(50)     /'Almacenar hash de la contraseña'/
   role_id : int <<FK>> 
   employee_id : int <<FK>> 
-  status : int
+  is_deleted : boolean
   created_at : datetime
   updated_at : datetime
 }
@@ -214,6 +248,7 @@ entity Role {
   * id : int <<PK>>
   --
   name : nvarchar(50)
+  is_deleted : boolean
   created_at : datetime
   updated_at : datetime
 }
@@ -223,6 +258,7 @@ entity Permission {
   --
   name : nvarchar(50)
   description : nvarchar(50)
+  is_deleted : boolean
   created_at : datetime
   updated_at : datetime
 }
@@ -233,6 +269,7 @@ entity Role_permission {
   --
   role_id : int <<FK>> 
   permission_id : int <<FK>> 
+  is_deleted : boolean
   created_at : datetime
   updated_at : datetime
 }
@@ -243,6 +280,7 @@ entity Receipt_type {
   --
   name : nvarchar(50)
   description : nvarchar(50)
+  is_deleted : boolean
   created_at : datetime
   updated_at : datetime
 }
@@ -253,6 +291,7 @@ entity Sales_channel {
   --
   name : nvarchar(50)
   description : nvarchar(50)
+  is_deleted : boolean
   created_at : datetime
   updated_at : datetime
 }
@@ -273,7 +312,7 @@ entity Sale {
   discount_id: int <<FK>> 
   creditTerm: nvarchar(10) /'plazo credito: Se omite si viene vacío, pero es de condición obligatoria cuando la condición de la venta es crédito'/
   tax_id: int <<FK>> 
-  status: int
+  is_deleted : boolean
   created_at : datetime
   updated_at : datetime
 }
@@ -282,6 +321,7 @@ entity Sale_order {
   --
   sale_id: int <<FK>> 
   order_id: int <<FK>> 
+  is_deleted : boolean
   created_at : datetime
   updated_at : datetime
 }
@@ -291,7 +331,7 @@ entity Payment_method {
   * id : int <<PK>>
   --
   name : nvarchar(50)
-  status : int
+  is_deleted : boolean
   created_at : datetime
   updated_at : datetime
 }
@@ -305,6 +345,7 @@ entity Inventory_movement {
   movement_type_id : int <<FK>> 
   quantity : int
   description : nvarchar(50)
+  is_deleted : boolean
   created_at : datetime
   updated_at : datetime
 }
@@ -314,6 +355,7 @@ entity Movement_type {
   * id : int <<PK>>
   --
   name : nvarchar(50)
+  is_deleted : boolean
   created_at : datetime
   updated_at : datetime
 }
@@ -328,8 +370,9 @@ entity Reservation {
   table_id : int <<FK>> 
   reservation_date : datetime
   number_of_people : int
-  status : nvarchar(50) /'pendiente, confirmada, cancelada'/
+  status: nvarchar
   note : nvarchar(50)
+  is_deleted : boolean
   created_at : datetime
   updated_at : datetime
 }
@@ -340,6 +383,7 @@ entity Tax {
   --
   name : nvarchar(50)
   rate : decimal
+  is_deleted : boolean
   created_at : datetime
   updated_at : datetime
 }
@@ -353,7 +397,7 @@ entity Cash_register {
   name : nvarchar(50) /'caja principal salon1'/ 
   pos_id : int <<FK>> 
   description: nvarchar(50)
-  status: int
+  is_deleted : boolean
   created_at : datetime
   updated_at : datetime
 }
@@ -371,7 +415,8 @@ entity Cash_register_session {
   expected_balance  : decimal /'calculado al cerrar'/ 
   discrepancy   : decimal /'diferencia (overage/shortage)'/ 
   description: nvarchar(50)
-  status_session: nvarchar(50) 'Default OPEN'
+  status: nvarchar(50) 'Default OPEN'
+  is_deleted : boolean
   created_at : datetime
   updated_at : datetime
 }
@@ -384,6 +429,7 @@ entity Cash_register_movement {
   movement_type_id: int <<FK>>
   amount: decimal
   description : nvarchar
+  is_deleted : boolean
   created_at : datetime
   updated_at : datetime
 }
@@ -396,6 +442,8 @@ entity Cash_register_session_approval {
   mount: decimal
   approved_at : datetime
   note : nvarchar(100)
+  is_deleted : boolean
+  updated_at : datetime
 }
 ' Promociones y Descuentos
 entity Discount {
@@ -407,6 +455,7 @@ entity Discount {
   value : decimal
   start_date : datetime
   end_date : datetime
+  is_deleted : boolean
   created_at : datetime
   updated_at : datetime
 }
@@ -418,7 +467,7 @@ entity Shift {
   name : nvarchar(50)
   start_time : datetime
   end_time : datetime
-  status : int /'open, closed'/
+  is_deleted : boolean
   created_at : datetime
   updated_at : datetime
 }
@@ -433,6 +482,8 @@ entity AuditLog {
   entity_id : int
   timestamp : datetime
   description : nvarchar(50)
+  is_deleted : boolean
+  created_at : datetime
 }
 
 ' Proveedor
@@ -443,6 +494,7 @@ entity Supplier {
   contact : nvarchar(50)
   email : nvarchar(50)
   address : nvarchar(50)
+  is_deleted : boolean
   created_at : datetime
   updated_at : datetime
 }
@@ -454,6 +506,7 @@ entity LoyaltyProgram {
   name : nvarchar(50)
   points : int
   customer_id : int <<FK>>
+  is_deleted : boolean
   created_at : datetime
   updated_at : datetime
 }
@@ -464,6 +517,7 @@ entity Employee_Shift {
   --
   employee_id : int <<FK>>
   shift_id : int <<FK>>
+  is_deleted : boolean
   created_at : datetime
   updated_at : datetime
 }
@@ -472,6 +526,9 @@ entity Sale_condition {
   * id : int <<PK>>
   --
   name: nvarchar(50)
+  is_deleted : boolean
+  created_at : datetime
+  updated_at : datetime
 }
 'MODULO FACTURACION
 entity Invoice {
@@ -490,6 +547,9 @@ entity Invoice {
   emailCopy : varchar(255) /'deben de venir separadas por punto y coma (;) sin espacios.'/
   other_content : varchar(255)
   other_text : varchaer(255)
+  is_deleted : boolean
+  created_at : datetime
+  updated_at : datetime
 }
 
 ' Tabla maestra de pasarelas de pago.
@@ -499,6 +559,7 @@ entity PaymentGateway {
   name : varchar(50) /'ej: Onvopay, tilopay,etc.'/
   code: varchar(50) /'ej: ONVO, TILO,etc.'/
   config: nvarchar(max) /'JSON con settings genéricos (p. ej. endpoints, llaves)'/
+  is_deleted : boolean
   created_at : datetime
   updated_at : datetime
 }
@@ -513,6 +574,7 @@ entity GatewayCustomer{
   SecretKey: varchar(255)
   RedirectUrl: varchar(500)
   ExternalCustomerId: varchar(100) /'id que devuelve la Api de onvo por cada customer'/
+  is_deleted : boolean
   created_at : datetime
   updated_at : datetime
 }
@@ -524,6 +586,9 @@ entity GatewayPaymentMethods{
   methodType: varchar(50)  /'sinpe,card,zunify'/
   externalMethodId: varchar(100) /'id que devuelve la Api de onvo por cada metodo de pago'/
   metaJson: nvarchar(MAX) /'Json Configuracion base'/
+  is_deleted : boolean
+  created_at : datetime
+  updated_at : datetime
 }
 'cuando se realice la transaccion copn el tipo de pasarela y metodo de pago (intencion de pago etc.)
 entity GatewayTransactions {
@@ -533,10 +598,12 @@ entity GatewayTransactions {
   gatewayPaymentMethod_id : int <<FK>> /'opcional si existe metodo'/
   amount: decimal(18,2)
   currency: varchar(10)
-  status: varchar(50)
+  status : boolean: varchar(50)
   requestJson: nvarchar(MAX)  /'todo el payload enviado'/
   responseJson: nvarchar(MAX) /'podemos guardar por seguridad la respuesta de cada transaccion'/
-  createdAt: datetime
+  is_deleted : boolean
+  created_at : datetime
+  updated_at : datetime
 }
 '=================== Relaciones ====================
 Customer "1" -- "0..*" GatewayCustomer
@@ -574,6 +641,9 @@ Order "1" -- "0..*" Order_detail
 
 ' Un producto aparece en muchos detalles.
 Product "1" -- "0..*" Order_detail
+Product "1" -- "0..*" Product_price
+Price "1" -- "0..*" Product_price
+Product_price "1" -- "0..*" Order_detail
 
 ' Un tipo de producto agrupa muchos productos.
 Product_type "1" -- "0..*" Product
