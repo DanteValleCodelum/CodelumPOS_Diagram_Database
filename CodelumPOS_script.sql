@@ -76,7 +76,10 @@ CREATE TABLE product_type (
 -- =======================
 CREATE TABLE id_type (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name VARCHAR(50) NOT NULL
+    name VARCHAR(50) NOT NULL,
+    is_deleted BOOLEAN,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
 -- =======================
@@ -520,9 +523,9 @@ CREATE TABLE cash_register_session (
 );
 
 -- =======================
--- Table: cash_register_operation
+-- Table: cash_register_movement
 -- =======================
-CREATE TABLE cash_movement (
+CREATE TABLE cash_register_movement (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     session_id UUID NOT NULL REFERENCES cash_register_session(id),
     movement_type VARCHAR(20) NOT NULL,
@@ -535,7 +538,7 @@ CREATE TABLE cash_movement (
 );
 
 --(Opcional) Registro de aprobaciones de cierre con discrepancia
-CREATE TABLE session_approval (
+CREATE TABLE cash_register_session_approval (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     session_id UUID NOT NULL REFERENCES cash_register_session(id),
     approved_by UUID NOT NULL REFERENCES employee(id),
@@ -604,7 +607,7 @@ CREATE TABLE invoice (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     batch_id INT,
     sale_id UUID NOT NULL REFERENCES sale(id),
-    cash_register_id UUID NOT NULL REFERENCES cash_register(id),
+    cash_register_movement_id UUID NOT NULL REFERENCES cash_register_movement(id),
     key_code VARCHAR(50),
     consecutive_number VARCHAR(20),
     issue_date TIMESTAMP NOT NULL,

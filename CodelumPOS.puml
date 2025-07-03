@@ -536,7 +536,7 @@ entity Invoice {
   --
   batch_Id : int
   sale_id: int <<FK>>
-  Cash_register_id:int <<FK>>
+  cash_register_movement_id:int <<FK>>
   key: mvarchar(50) /'(si no se envía el API lo genera automáticamente y lo devuelve en la respuesta)'/
   consecutiveNumber : varchar(20)
   issueDate : datetime
