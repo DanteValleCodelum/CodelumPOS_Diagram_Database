@@ -79,7 +79,7 @@ LANGUAGE plpgsql
 AS $$
 BEGIN
     RETURN QUERY
-    SELECT id, name, is_deleted, created_at, updated_at
+    SELECT role.id, role.name, role.is_deleted, role.created_at, role.updated_at
     FROM role;
 END;
 $$;
@@ -97,9 +97,9 @@ LANGUAGE plpgsql
 AS $$
 BEGIN
     RETURN QUERY
-    SELECT id, name, is_deleted, created_at, updated_at
+    SELECT role.id, role.name, role.is_deleted, role.created_at, role.updated_at
     FROM role
-    WHERE id = _id;
+    WHERE role.id = _id;
 END;
 $$;
 CREATE OR REPLACE FUNCTION fn_get_roles_by_deleted(
@@ -116,9 +116,9 @@ LANGUAGE plpgsql
 AS $$
 BEGIN
     RETURN QUERY
-    SELECT id, name, is_deleted, created_at, updated_at
+    SELECT role.id, role.name, role.is_deleted, role.created_at, role.updated_at
     FROM role
-    WHERE is_deleted = _is_deleted;
+    WHERE role.is_deleted = _is_deleted;
 END;
 $$;
 
@@ -136,7 +136,7 @@ LANGUAGE plpgsql
 AS $$
 BEGIN
     RETURN QUERY
-    SELECT id, name, description, is_deleted, created_at, updated_at
+    SELECT permission.id, permission.name, permission.description, permission.is_deleted, permission.created_at, permission.updated_at
     FROM permission;
 END;
 $$;
@@ -155,9 +155,9 @@ LANGUAGE plpgsql
 AS $$
 BEGIN
     RETURN QUERY
-    SELECT id, name, description, is_deleted, created_at, updated_at
+    SELECT permission.id, permission.name, permission.description, permission.is_deleted, permission.created_at, permission.updated_at
     FROM permission
-    WHERE id = _id;
+    WHERE permission.id = _id;
 END;
 $$;
 CREATE OR REPLACE FUNCTION fn_get_permissions_by_deleted(
@@ -175,9 +175,9 @@ LANGUAGE plpgsql
 AS $$
 BEGIN
     RETURN QUERY
-    SELECT id, name, description, is_deleted, created_at, updated_at
+    SELECT permission.id, permission.name, permission.description, permission.is_deleted, permission.created_at, permission.updated_at
     FROM permission
-    WHERE is_deleted = _is_deleted;
+    WHERE permission.is_deleted = _is_deleted;
 END;
 $$;
 
@@ -292,7 +292,7 @@ LANGUAGE plpgsql
 AS $$
 BEGIN
     RETURN QUERY
-    SELECT id, name, country, city, address, phone, is_deleted, created_at, updated_at
+    SELECT branch.id, branch.name, branch.country, branch.city, branch.address, branch.phone, branch.is_deleted, branch.created_at, branch.updated_at
     FROM branch;
 END;
 $$;
@@ -314,9 +314,9 @@ LANGUAGE plpgsql
 AS $$
 BEGIN
     RETURN QUERY
-    SELECT id, name, country, city, address, phone, is_deleted, created_at, updated_at
+    SELECT branch.id, branch.name, branch.country, branch.city, branch.address, branch.phone, branch.is_deleted, branch.created_at, branch.updated_at
     FROM branch
-    WHERE id = _id;
+    WHERE branch.id = _id;
 END;
 $$;
 CREATE OR REPLACE FUNCTION fn_get_branches_by_deleted(
@@ -337,9 +337,9 @@ LANGUAGE plpgsql
 AS $$
 BEGIN
     RETURN QUERY
-    SELECT id, name, country, city, address, phone, is_deleted, created_at, updated_at
+    SELECT branch.id, branch.name, branch.country, branch.city, branch.address, branch.phone, branch.is_deleted, branch.created_at, branch.updated_at
     FROM branch
-    WHERE is_deleted = _is_deleted;
+    WHERE branch.is_deleted = _is_deleted;
 END;
 $$;
 
@@ -423,7 +423,7 @@ LANGUAGE plpgsql
 AS $$
 BEGIN
     RETURN QUERY
-    SELECT id, name, start_time, end_time, is_deleted, created_at, updated_at
+    SELECT shift.id, shift.name, shift.start_time, shift.end_time, shift.is_deleted, shift.created_at, shift.updated_at
     FROM shift;
 END;
 $$;
@@ -443,9 +443,9 @@ LANGUAGE plpgsql
 AS $$
 BEGIN
     RETURN QUERY
-    SELECT id, name, start_time, end_time, is_deleted, created_at, updated_at
+    SELECT shift.id, shift.name, shift.start_time, shift.end_time, shift.is_deleted, shift.created_at, shift.updated_at
     FROM shift
-    WHERE id = _id;
+    WHERE shift.id = _id;
 END;
 $$;
 CREATE OR REPLACE FUNCTION fn_get_shifts_by_deleted(
@@ -464,9 +464,75 @@ LANGUAGE plpgsql
 AS $$
 BEGIN
     RETURN QUERY
-    SELECT id, name, start_time, end_time, is_deleted, created_at, updated_at
+    SELECT shift.id, shift.name, shift.start_time, shift.end_time, shift.is_deleted, shift.created_at, shift.updated_at
     FROM shift
-    WHERE is_deleted = _is_deleted;
+    WHERE shift.is_deleted = _is_deleted;
+END;
+$$;
+
+-- employee
+CREATE OR REPLACE FUNCTION fn_get_all_employees()
+RETURNS TABLE (
+    id          UUID,
+    first_name  VARCHAR,
+    last_name   VARCHAR,
+    phone       VARCHAR,
+    start_date  TIMESTAMP,
+    end_date    TIMESTAMP,
+    is_deleted  BOOLEAN,
+    created_at  TIMESTAMP,
+    updated_at  TIMESTAMP
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT employee.id, employee.first_name, employee.last_name, employee.phone, employee.start_date, employee.end_date, employee.is_deleted, employee.created_at, employee.updated_at
+    FROM employee;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION fn_get_employee_by_id(_id UUID)
+RETURNS TABLE (
+    id          UUID,
+    first_name  VARCHAR,
+    last_name   VARCHAR,
+    phone       VARCHAR,
+    start_date  TIMESTAMP,
+    end_date    TIMESTAMP,
+    is_deleted  BOOLEAN,
+    created_at  TIMESTAMP,
+    updated_at  TIMESTAMP
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT employee.id, employee.first_name, employee.last_name, employee.phone, employee.start_date, employee.end_date, employee.is_deleted, employee.created_at, employee.updated_at
+    FROM employee
+    WHERE employee.id = _id;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION fn_get_employees_by_deleted(_is_deleted BOOLEAN)
+RETURNS TABLE (
+    id          UUID,
+    first_name  VARCHAR,
+    last_name   VARCHAR,
+    phone       VARCHAR,
+    start_date  TIMESTAMP,
+    end_date    TIMESTAMP,
+    is_deleted  BOOLEAN,
+    created_at  TIMESTAMP,
+    updated_at  TIMESTAMP
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT employee.id, employee.first_name, employee.last_name, employee.phone, employee.start_date, employee.end_date, employee.is_deleted, employee.created_at, employee.updated_at
+    FROM employee
+    WHERE employee.is_deleted = _is_deleted;
 END;
 $$;
 
@@ -483,9 +549,9 @@ RETURNS TABLE (
 LANGUAGE plpgsql
 AS $$
 BEGIN
-    RETURN QUERY
-    SELECT id, employee_id, shift_id, is_deleted, created_at, updated_at
-      FROM employee_shift;
+        RETURN QUERY
+    SELECT employee_shift.id, employee_shift.employee_id, employee_shift.shift_id, employee_shift.is_deleted, employee_shift.created_at, employee_shift.updated_at
+    FROM employee_shift;
 END;
 $$;
 CREATE OR REPLACE FUNCTION fn_get_employee_shift_by_id(_id UUID)
