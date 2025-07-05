@@ -2263,130 +2263,118 @@ $$;
 CREATE OR REPLACE FUNCTION fn_get_all_audit_logs()
 RETURNS TABLE (
     id UUID,
-    user_id UUID,
+    employee_id UUID,
     action VARCHAR,
-    table_name VARCHAR,
-    record_id UUID,
+    entity_name VARCHAR,
+    entity_id UUID,
     timestamp TIMESTAMP,
-    details TEXT,
-    is_deleted BOOLEAN,
-    created_at TIMESTAMP,
-    updated_at TIMESTAMP
+    description VARCHAR,
+    is_deleted BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
     RETURN QUERY
-    SELECT id, user_id, action, table_name, record_id, timestamp, details, is_deleted, created_at, updated_at
+    SELECT id, employee_id, action, entity_name, entity_id, timestamp, description, is_deleted
     FROM audit_log;
 END;
 $$;
 CREATE OR REPLACE FUNCTION fn_get_audit_log_by_id(_id UUID)
 RETURNS TABLE (
     id UUID,
-    user_id UUID,
+    employee_id UUID,
     action VARCHAR,
-    table_name VARCHAR,
-    record_id UUID,
+    entity_name VARCHAR,
+    entity_id UUID,
     timestamp TIMESTAMP,
-    details TEXT,
-    is_deleted BOOLEAN,
-    created_at TIMESTAMP,
-    updated_at TIMESTAMP
+    description VARCHAR,
+    is_deleted BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
     RETURN QUERY
-    SELECT id, user_id, action, table_name, record_id, timestamp, details, is_deleted, created_at, updated_at
+    SELECT id, employee_id, action, entity_name, entity_id, timestamp, description, is_deleted
     FROM audit_log
     WHERE id = _id;
 END;
 $$;
-CREATE OR REPLACE FUNCTION fn_get_audit_logs_by_user(_user_id UUID)
+CREATE OR REPLACE FUNCTION fn_get_audit_logs_by_employee(_employee_id UUID)
 RETURNS TABLE (
     id UUID,
-    user_id UUID,
+    employee_id UUID,
     action VARCHAR,
-    table_name VARCHAR,
-    record_id UUID,
+    entity_name VARCHAR,
+    entity_id UUID,
     timestamp TIMESTAMP,
-    details TEXT,
-    is_deleted BOOLEAN,
-    created_at TIMESTAMP,
-    updated_at TIMESTAMP
+    description VARCHAR,
+    is_deleted BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
     RETURN QUERY
-    SELECT id, user_id, action, table_name, record_id, timestamp, details, is_deleted, created_at, updated_at
+    SELECT id, employee_id, action, entity_name, entity_id, timestamp, description, is_deleted
     FROM audit_log
-    WHERE user_id = _user_id;
+    WHERE employee_id = _employee_id;
 END;
 $$;
 CREATE OR REPLACE FUNCTION fn_get_audit_logs_by_action(_action VARCHAR)
 RETURNS TABLE (
     id UUID,
-    user_id UUID,
+    employee_id UUID,
     action VARCHAR,
-    table_name VARCHAR,
-    record_id UUID,
+    entity_name VARCHAR,
+    entity_id UUID,
     timestamp TIMESTAMP,
-    details TEXT,
-    is_deleted BOOLEAN,
-    created_at TIMESTAMP,
-    updated_at TIMESTAMP
+    description VARCHAR,
+    is_deleted BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
     RETURN QUERY
-    SELECT id, user_id, action, table_name, record_id, timestamp, details, is_deleted, created_at, updated_at
+    SELECT id, employee_id, action, entity_name, entity_id, timestamp, description, is_deleted
     FROM audit_log
     WHERE action = _action;
 END;
 $$;
-CREATE OR REPLACE FUNCTION fn_get_audit_logs_by_table(_table_name VARCHAR)
+CREATE OR REPLACE FUNCTION fn_get_audit_logs_by_entity(_entity_name VARCHAR)
 RETURNS TABLE (
     id UUID,
-    user_id UUID,
+    employee_id UUID,
     action VARCHAR,
-    table_name VARCHAR,
-    record_id UUID,
+    entity_name VARCHAR,
+    entity_id UUID,
     timestamp TIMESTAMP,
-    details TEXT,
-    is_deleted BOOLEAN,
-    created_at TIMESTAMP,
-    updated_at TIMESTAMP
+    description VARCHAR,
+    is_deleted BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
     RETURN QUERY
-    SELECT id, user_id, action, table_name, record_id, timestamp, details, is_deleted, created_at, updated_at
+    SELECT id, employee_id, action, entity_name, entity_id, timestamp, description, is_deleted
     FROM audit_log
-    WHERE table_name = _table_name;
+    WHERE entity_name = _entity_name;
 END;
 $$;
 CREATE OR REPLACE FUNCTION fn_get_audit_logs_by_deleted(_is_deleted BOOLEAN)
 RETURNS TABLE (
     id UUID,
-    user_id UUID,
+    employee_id UUID,
     action VARCHAR,
-    table_name VARCHAR,
-    record_id UUID,
+    entity_name VARCHAR,
+    entity_id UUID,
     timestamp TIMESTAMP,
-    details TEXT,
-    is_deleted BOOLEAN,
-    created_at TIMESTAMP,
-    updated_at TIMESTAMP
+    description VARCHAR,
+    is_deleted BOOLEAN
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
     RETURN QUERY
-    SELECT id, user_id, action, table_name, record_id, timestamp, details, is_deleted, created_at, updated_at
+    SELECT id, employee_id, action, entity_name, entity_id, timestamp, description, is_deleted
     FROM audit_log
     WHERE is_deleted = _is_deleted;
 END;
