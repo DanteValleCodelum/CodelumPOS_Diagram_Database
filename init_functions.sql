@@ -2333,7 +2333,7 @@ RETURNS TABLE (
     action VARCHAR,
     entity_name VARCHAR,
     entity_id UUID,
-    timestamp TIMESTAMP,
+    audit_timestamp TIMESTAMP,
     description VARCHAR,
     is_deleted BOOLEAN
 )
@@ -2352,7 +2352,7 @@ RETURNS TABLE (
     action VARCHAR,
     entity_name VARCHAR,
     entity_id UUID,
-    timestamp TIMESTAMP,
+    audit_timestamp TIMESTAMP,
     description VARCHAR,
     is_deleted BOOLEAN
 )
@@ -2372,7 +2372,7 @@ RETURNS TABLE (
     action VARCHAR,
     entity_name VARCHAR,
     entity_id UUID,
-    timestamp TIMESTAMP,
+    audit_timestamp TIMESTAMP,
     description VARCHAR,
     is_deleted BOOLEAN
 )
@@ -2392,7 +2392,7 @@ RETURNS TABLE (
     action VARCHAR,
     entity_name VARCHAR,
     entity_id UUID,
-    timestamp TIMESTAMP,
+    audit_timestamp TIMESTAMP,
     description VARCHAR,
     is_deleted BOOLEAN
 )
@@ -2412,7 +2412,7 @@ RETURNS TABLE (
     action VARCHAR,
     entity_name VARCHAR,
     entity_id UUID,
-    timestamp TIMESTAMP,
+    audit_timestamp TIMESTAMP,
     description VARCHAR,
     is_deleted BOOLEAN
 )
@@ -2432,7 +2432,7 @@ RETURNS TABLE (
     action VARCHAR,
     entity_name VARCHAR,
     entity_id UUID,
-    timestamp TIMESTAMP,
+    audit_timestamp TIMESTAMP,
     description VARCHAR,
     is_deleted BOOLEAN
 )
