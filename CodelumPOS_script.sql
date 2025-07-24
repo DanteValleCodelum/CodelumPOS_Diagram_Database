@@ -90,6 +90,8 @@ CREATE TABLE employee (
     first_name VARCHAR(50) NOT NULL,
     last_name VARCHAR(50) NOT NULL,
     phone VARCHAR(50) NOT NULL,
+    birth_date DATE,
+    photo_url VARCHAR(255),
     start_date TIMESTAMP NOT NULL DEFAULT NOW(),
     end_date TIMESTAMP,
     is_deleted BOOLEAN,
