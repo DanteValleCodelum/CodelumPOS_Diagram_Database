@@ -2105,5 +2105,147 @@ BEGIN
 END;
 $$;
 
+-- =========================================
+-- ID_TYPE
+-- =========================================
+
+-- Obtener todos los tipos de documento (tanto eliminados como no eliminados)
+CREATE OR REPLACE FUNCTION fn_get_all_id_types()
+RETURNS TABLE (
+    id          UUID,
+    name        VARCHAR,
+    is_deleted  BOOLEAN,
+    created_at  TIMESTAMP,
+    updated_at  TIMESTAMP
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT id, name, is_deleted, created_at, updated_at
+      FROM id_type;
+END;
+$$;
+
+-- Obtener un tipo de documento por su ID (sin importar si está eliminado o no)
+CREATE OR REPLACE FUNCTION fn_get_id_type_by_id(_id UUID)
+RETURNS TABLE (
+    id          UUID,
+    name        VARCHAR,
+    is_deleted  BOOLEAN,
+    created_at  TIMESTAMP,
+    updated_at  TIMESTAMP
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT id, name, is_deleted, created_at, updated_at
+      FROM id_type
+     WHERE id = _id;
+END;
+$$;
+
+-- Obtener tipos de documento según su estado de eliminación
+CREATE OR REPLACE FUNCTION fn_get_id_types_by_deleted(_is_deleted BOOLEAN)
+RETURNS TABLE (
+    id          UUID,
+    name        VARCHAR,
+    is_deleted  BOOLEAN,
+    created_at  TIMESTAMP,
+    updated_at  TIMESTAMP
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT id, name, is_deleted, created_at, updated_at
+      FROM id_type
+     WHERE is_deleted = _is_deleted;
+END;
+$$;
+
+-- =========================================
+-- LOYALTY_PROGRAM
+-- =========================================
+-- Obtener todos los programas de lealtad
+CREATE OR REPLACE FUNCTION fn_get_all_loyalty_programs()
+RETURNS TABLE (
+    id           UUID,
+    name         VARCHAR,
+    points       INT,
+    customer_id  UUID,
+    created_at   TIMESTAMP,
+    updated_at   TIMESTAMP
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT id, name, points, customer_id, created_at, updated_at
+      FROM loyalty_program;
+END;
+$$;
+
+-- Obtener un programa de lealtad por ID
+CREATE OR REPLACE FUNCTION fn_get_loyalty_program_by_id(_id UUID)
+RETURNS TABLE (
+    id           UUID,
+    name         VARCHAR,
+    points       INT,
+    customer_id  UUID,
+    created_at   TIMESTAMP,
+    updated_at   TIMESTAMP
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT id, name, points, customer_id, created_at, updated_at
+      FROM loyalty_program
+     WHERE id = _id;
+END;
+$$;
+-- Obtener programas de lealtad según estado de eliminación
+CREATE OR REPLACE FUNCTION fn_get_loyalty_programs_by_deleted(_is_deleted BOOLEAN)
+RETURNS TABLE (
+    id           UUID,
+    name         VARCHAR,
+    points       INT,
+    customer_id  UUID,
+    is_deleted   BOOLEAN,
+    created_at   TIMESTAMP,
+    updated_at   TIMESTAMP
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT id, name, points, customer_id, is_deleted, created_at, updated_at
+      FROM loyalty_program
+     WHERE is_deleted = _is_deleted;
+END;
+$$;
+-- Obtener programas de lealtad por ID de cliente
+CREATE OR REPLACE FUNCTION fn_get_loyalty_programs_by_customer(_customer_id UUID)
+RETURNS TABLE (
+    id           UUID,
+    name         VARCHAR,
+    points       INT,
+    customer_id  UUID,
+    created_at   TIMESTAMP,
+    updated_at   TIMESTAMP
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT id, name, points, customer_id, created_at, updated_at
+      FROM loyalty_program
+     WHERE customer_id = _customer_id;
+END;
+$$;
+
+
 
 
