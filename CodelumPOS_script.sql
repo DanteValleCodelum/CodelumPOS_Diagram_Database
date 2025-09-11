@@ -90,6 +90,8 @@ CREATE TABLE employee (
     first_name VARCHAR(50) NOT NULL,
     last_name VARCHAR(50) NOT NULL,
     phone VARCHAR(50) NOT NULL,
+    birth_date DATE,
+    photo_url VARCHAR(255),
     start_date TIMESTAMP NOT NULL DEFAULT NOW(),
     end_date TIMESTAMP,
     is_deleted BOOLEAN,
@@ -222,7 +224,7 @@ CREATE TABLE table_restaurant (
 -- =======================
 CREATE TABLE sale_condition (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name VARCHAR(50) NOT NULL
+    name VARCHAR(50) NOT NULL,
     is_deleted BOOLEAN,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW()
@@ -532,7 +534,7 @@ CREATE TABLE cash_register_movement (
     -- SALE | INCOME | EXPENSE | REFUND
     description TEXT,
     amount NUMERIC(10, 2) NOT NULL,
-    performed_at TIMESTAMP DEFAULT NOW()
+    performed_at TIMESTAMP DEFAULT NOW(),
     is_deleted BOOLEAN,
     updated_at TIMESTAMP DEFAULT NOW()
 );
@@ -571,8 +573,8 @@ CREATE TABLE audit_log (
     entity_name VARCHAR(50) NOT NULL,
     entity_id UUID NOT NULL,
     timestamp TIMESTAMP NOT NULL DEFAULT NOW(),
-    description VARCHAR(50)
-    is_deleted BOOLEAN,
+    description VARCHAR(50),
+    is_deleted BOOLEAN
 );
 
 -- =======================
@@ -617,8 +619,7 @@ CREATE TABLE invoice (
     document VARCHAR(255),
     email_copy VARCHAR(255),
     other_content VARCHAR(255),
-    other_text VARCHAR(255)
-
+    other_text VARCHAR(255),
     is_deleted BOOLEAN,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW()
@@ -649,7 +650,7 @@ CREATE TABLE gateway_payment_methods (
     gateway_customer_id UUID NOT NULL REFERENCES gateway_customer(id),
     method_type VARCHAR(50) NOT NULL,
     external_method_id VARCHAR(100),
-    meta_json JSONB
+    meta_json JSONB,
     is_deleted BOOLEAN,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW()
@@ -668,6 +669,18 @@ CREATE TABLE gateway_transactions (
     request_json JSONB,
     response_json JSONB,
     is_deleted BOOLEAN,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+-- =======================
+-- Table: menu
+-- =======================
+CREATE TABLE menu (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name VARCHAR(100) NOT NULL,
+    description VARCHAR(255),
+    available_date DATE NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 );

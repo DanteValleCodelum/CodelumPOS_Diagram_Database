@@ -103,6 +103,8 @@ entity Employee {
   first_name : nvarchar(50)
   last_name : nvarchar(50)
   phone : nvarchar(50)
+  birth_date : date
+  photo_url : nvarchar(255)
   start_date: datetime
   end_date: datetime 'Puede ser NULL si aún trabaja'
   is_deleted : boolean
