@@ -106,6 +106,7 @@ CREATE TABLE order_type (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(50) NOT NULL,
     description VARCHAR(50),
+    is_deleted BOOLEAN,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
@@ -264,7 +265,7 @@ CREATE TABLE product (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(50) NOT NULL,
     description VARCHAR(50),
-    image_uri VARCHAR(255),
+    image_url VARCHAR(255),
     supplier_id UUID REFERENCES supplier(id),
     product_type_id UUID NOT NULL REFERENCES product_type(id),
     is_deleted BOOLEAN,
@@ -452,7 +453,7 @@ CREATE TABLE sale (
 -- =======================
 -- Table: Sale_order
 -- =======================
-CREATE TABLE Sale_order (
+CREATE TABLE sale_order (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     sale_id UUID NOT NULL REFERENCES sale(id),
     order_id UUID NOT NULL REFERENCES orders(id),
@@ -531,11 +532,11 @@ CREATE TABLE cash_register_movement (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     session_id UUID NOT NULL REFERENCES cash_register_session(id),
     movement_type VARCHAR(20) NOT NULL,
-    -- SALE | INCOME | EXPENSE | REFUND
     description TEXT,
     amount NUMERIC(10, 2) NOT NULL,
     performed_at TIMESTAMP DEFAULT NOW(),
     is_deleted BOOLEAN,
+    created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW()
 );
 
@@ -547,6 +548,7 @@ CREATE TABLE cash_register_session_approval (
     approved_at TIMESTAMP NOT NULL DEFAULT NOW(),
     note TEXT,
     is_deleted BOOLEAN,
+    created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW()
 );
 
@@ -574,7 +576,9 @@ CREATE TABLE audit_log (
     entity_id UUID NOT NULL,
     timestamp TIMESTAMP NOT NULL DEFAULT NOW(),
     description VARCHAR(50),
-    is_deleted BOOLEAN
+    is_deleted BOOLEAN,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
 -- =======================
@@ -669,18 +673,6 @@ CREATE TABLE gateway_transactions (
     request_json JSONB,
     response_json JSONB,
     is_deleted BOOLEAN,
-    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
-);
-
--- =======================
--- Table: menu
--- =======================
-CREATE TABLE menu (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name VARCHAR(100) NOT NULL,
-    description VARCHAR(255),
-    available_date DATE NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 );

@@ -6,19 +6,19 @@
 
 ' ALMACENES =================
 entity Warehouse {
-  * id : int <<PK>>
+  * id : UUID <<PK>>
   --
   name : nvarchar(50)
   shortname : nvarchar(50)
-  parent_warehouse_id : int <<<FK>> > /'Para reabastecimiento de otro almacén'/
-  branch_id : int <<<FK>> >  /'Ubicación o dirección del almacén'/
+  parent_warehouse_id : UUID <<<FK>> > /'Para reabastecimiento de otro almacén'/
+  branch_id : UUID <<<FK>> >  /'Ubicación o dirección del almacén'/
   is_deleted : boolean
   created_at : datetime
   updated_at : datetime
 }
 
 entity Storage_type {
-  * id : int <<PK>>
+  * id : UUID <<PK>>
   --
   name : nvarchar(50)
   maximum_Weight : nvarchar(50)  /'Kg, Libras, etc.'/
@@ -29,10 +29,10 @@ entity Storage_type {
 }
 
 entity Detail_storage_type {
-  * id : int <<PK>>
+  * id : UUID <<PK>>
   --
-  warehouseCategory_id : int <<<FK>> > 
-  product_id : int <<<FK>> > 
+  warehouseCategory_id : UUID <<<FK>> > 
+  product_id : UUID <<<FK>> > 
   quantity : int
   is_deleted : boolean
   created_at : datetime
@@ -41,7 +41,7 @@ entity Detail_storage_type {
 
 ' ENTIDAD: SUCURSAL
 entity Branch {
-  * id : int <<PK>>
+  * id : UUID <<PK>>
   --
   name : nvarchar(50)
   country : nvarchar(50)
@@ -55,10 +55,10 @@ entity Branch {
 
 ' PUNTO DE VENTA (POS)
 entity POS {
-  * id : int <<PK>>
+  * id : UUID <<PK>>
   --
   name : nvarchar(50)           /'Tipo de punto de venta (restaurante, RestoBar, etc.)'/
-  branch_id : int <<<FK>> > 
+  branch_id : UUID <<<FK>> > 
   is_deleted : boolean
   created_at : datetime
   updated_at : datetime
@@ -67,14 +67,14 @@ entity POS {
 
 ' CLIENTE
 entity IDType {
-  * id : int <<PK>>
+  * id : UUID <<PK>>
   --
   name : nvarchar(50)
 }
 entity Customer {
-  * id : int <<PK>>
+  * id : UUID <<PK>>
   --
-  IDType_id: int <<<FK>> >
+  IDType_id: UUID <<<FK>> >
   IDNumber: nvarchar(50)
   name : nvarchar(50)
   lastname : nvarchar(50)
@@ -87,7 +87,7 @@ entity Customer {
 
 ' MESA
 entity Table {
-  * id : int <<PK>>
+  * id : UUID <<PK>>
   --
   number : int
   capacity : int
@@ -98,7 +98,7 @@ entity Table {
 
 ' EMPLEADO
 entity Employee {
-  * id : int <<PK>>
+  * id : UUID <<PK>>
   --
   first_name : nvarchar(50)
   last_name : nvarchar(50)
@@ -114,14 +114,14 @@ entity Employee {
 
 ' ORDEN
 entity Order {
-  * id : int <<PK>>
+  * id : UUID <<PK>>
   --
-  table_id : int <<FK>> 
-  employee_id : int <<FK>>  /'Replaces waiter_id'/
-  customer_id : int <<FK>>  [optional]
+  table_id : UUID <<FK>> 
+  employee_id : UUID <<FK>>  /'Replaces waiter_id'/
+  customer_id : UUID <<FK>>  [optional]
   order_date : datetime
   total : decimal
-  order_type_id : int <<FK>> 
+  order_type_id : UUID <<FK>> 
   order_status : nvarchar(50) /'pendiente, en preparación, servida, cancelada'/
   is_deleted : boolean
   created_at : datetime
@@ -130,7 +130,7 @@ entity Order {
 
 ' TIPO DE ORDEN
 entity Order_type {
-  * id : int <<PK>>
+  * id : UUID <<PK>>
   --
   name : nvarchar(50)
   description : nvarchar(50)
@@ -141,11 +141,11 @@ entity Order_type {
 
 ' DETALLE DE LA ORDEN
 entity Order_detail {
-  * id : int <<PK>>
+  * id : UUID <<PK>>
   --
-  order_id : int <<FK>> 
-  product_id : int <<FK>> 
-  product_price_id : int <<FK>> 
+  order_id : UUID <<FK>> 
+  product_id : UUID <<FK>> 
+  product_price_id : UUID <<FK>> 
   unit_price : int
   quantity : int
   subtotal : decimal
@@ -156,7 +156,7 @@ entity Order_detail {
 
 ' TIPO DE PRODUCTO
 entity Product_type {
-  * id : int <<PK>>
+  * id : UUID <<PK>>
   --
   name : nvarchar(50)
   description : nvarchar(50)
@@ -167,13 +167,13 @@ entity Product_type {
 
 ' PRODUCTO 
 entity Product {
-  * id : int <<PK>>
+  * id : UUID <<PK>>
   --
   name : nvarchar(50)
   description : nvarchar(50)
-  image_uri : nvarchar(50)
-  supplier_id : int <<FK>> 
-  product_type_id : int <<FK>> 
+  image_url : nvarchar(50)
+  supplier_id : UUID <<FK>> 
+  product_type_id : UUID <<FK>> 
   is_deleted : boolean
   created_at : datetime
   updated_at : datetime
@@ -181,10 +181,10 @@ entity Product {
 
 ' Product Taxes
 entity Product_tax {
-  * id : int <<PK>>
+  * id : UUID <<PK>>
   --
-  product_id : int <<FK>> 
-  tax_id : int <<FK>> 
+  product_id : UUID <<FK>> 
+  tax_id : UUID <<FK>> 
   is_deleted : boolean
   created_at : datetime
   updated_at : datetime
@@ -192,7 +192,7 @@ entity Product_tax {
 
 ' Precio
 entity Price {
-  * id : int <<PK>>
+  * id : UUID <<PK>>
   --
   name : nvarchar(50) /'Precio Público', 'Happy Hour'/
   cost_price : decimal(10,2) /'precio de costo base'/
@@ -205,10 +205,10 @@ entity Price {
 }
 ' Producto Precio 
 entity Product_price {
-  * id : int <<PK>>
+  * id : UUID <<PK>>
   --
-  product_id : int <<FK>> 
-  price_id : int <<FK>> 
+  product_id : UUID <<FK>> 
+  price_id : UUID <<FK>> 
   valid_from : datetime /'inicio de vigencia de este precio'/
   valid_to   : datetime /'fin de vigencia (NULL = vigente)'/
   is_deleted : boolean
@@ -218,11 +218,11 @@ entity Product_price {
 
 ' INVENTARIO (para sucursales)
 entity Inventory {
-  * id : int <<PK>>
+  * id : UUID <<PK>>
   --
   barCode: nvarchar(50) 
-  product_id : int <<FK>> 
-  warehouse_id : int <<FK>> 
+  product_id : UUID <<FK>> 
+  warehouse_id : UUID <<FK>> 
   min_stock : int
   max_stock : int
   current_stock : int
@@ -235,19 +235,19 @@ entity Inventory {
 
 ' USUARIOS Y PERMISOS
 entity User {
-  * id : int <<PK>>
+  * id : UUID <<PK>>
   --
   username : nvarchar(50)
   password : nvarchar(50)     /'Almacenar hash de la contraseña'/
-  role_id : int <<FK>> 
-  employee_id : int <<FK>> 
+  role_id : UUID <<FK>> 
+  employee_id : UUID <<FK>> 
   is_deleted : boolean
   created_at : datetime
   updated_at : datetime
 }
 
 entity Role {
-  * id : int <<PK>>
+  * id : UUID <<PK>>
   --
   name : nvarchar(50)
   is_deleted : boolean
@@ -256,7 +256,7 @@ entity Role {
 }
 
 entity Permission {
-  * id : int <<PK>>
+  * id : UUID <<PK>>
   --
   name : nvarchar(50)
   description : nvarchar(50)
@@ -267,10 +267,10 @@ entity Permission {
 
 ' Tabla intermedia con clave compuesta (en lugar de id)
 entity Role_permission {
-  * id : int <<PK>>
+  * id : UUID <<PK>>
   --
-  role_id : int <<FK>> 
-  permission_id : int <<FK>> 
+  role_id : UUID <<FK>> 
+  permission_id : UUID <<FK>> 
   is_deleted : boolean
   created_at : datetime
   updated_at : datetime
@@ -278,7 +278,7 @@ entity Role_permission {
 
 ' COMPROBANTES (boleta, factura)
 entity Receipt_type {
-  * id : int <<PK>>
+  * id : UUID <<PK>>
   --
   name : nvarchar(50)
   description : nvarchar(50)
@@ -289,7 +289,7 @@ entity Receipt_type {
 
 ' CANALES DE VENTA (web, tienda, terceros)
 entity Sales_channel {
-  * id : int <<PK>>
+  * id : UUID <<PK>>
   --
   name : nvarchar(50)
   description : nvarchar(50)
@@ -300,29 +300,29 @@ entity Sales_channel {
 
 ' VENTA (transacción final)
 entity Sale {
-  * id : int <<PK>>
+  * id : UUID <<PK>>
   --
   sale_date : datetime
-  employee_id : int <<FK>> /' cashier_id '/
+  employee_id : UUID <<FK>> /' cashier_id '/
   total : decimal
-  customer_id : int <<FK>> 
-  receipt_type_id : int <<FK>> 
-  payment_method_id : int <<FK>> 
-  sales_channel_id : int <<FK>> 
-  pos_id : int <<FK>> 
-  sale_condition_id: <<FK>> 
-  discount_id: int <<FK>> 
+  customer_id : UUID <<FK>> 
+  receipt_type_id : UUID <<FK>> 
+  payment_method_id : UUID <<FK>> 
+  sales_channel_id : UUID <<FK>> 
+  pos_id : UUID <<FK>> 
+  sale_condition_id: UUID <<FK>> 
+  discount_id: UUID <<FK>> 
   creditTerm: nvarchar(10) /'plazo credito: Se omite si viene vacío, pero es de condición obligatoria cuando la condición de la venta es crédito'/
-  tax_id: int <<FK>> 
+  tax_id: UUID <<FK>> 
   is_deleted : boolean
   created_at : datetime
   updated_at : datetime
 }
 entity Sale_order {
-  * id : int <<PK>>
+  * id : UUID <<PK>>
   --
-  sale_id: int <<FK>> 
-  order_id: int <<FK>> 
+  sale_id: UUID <<FK>> 
+  order_id: UUID <<FK>> 
   is_deleted : boolean
   created_at : datetime
   updated_at : datetime
@@ -330,7 +330,7 @@ entity Sale_order {
 
 ' MÉTODO DE PAGO
 entity Payment_method {
-  * id : int <<PK>>
+  * id : UUID <<PK>>
   --
   name : nvarchar(50)
   is_deleted : boolean
@@ -340,11 +340,11 @@ entity Payment_method {
 
 ' MOVIMIENTOS DE INVENTARIO
 entity Inventory_movement {
-  * id : int <<PK>>
+  * id : UUID <<PK>>
   --
-  inventory_id : int <<FK>> 
+  inventory_id : UUID <<FK>> 
   movement_date : datetime
-  movement_type_id : int <<FK>> 
+  movement_type_id : UUID <<FK>> 
   quantity : int
   description : nvarchar(50)
   is_deleted : boolean
@@ -354,7 +354,7 @@ entity Inventory_movement {
 
 ' TIPO DE MOVIMIENTO (ingreso o salida)
 entity Movement_type {
-  * id : int <<PK>>
+  * id : UUID <<PK>>
   --
   name : nvarchar(50)
   is_deleted : boolean
@@ -366,10 +366,10 @@ entity Movement_type {
 
 ' Reservaciones
 entity Reservation {
-  * id : int <<PK>>
+  * id : UUID <<PK>>
   --
-  customer_id : int <<FK>> 
-  table_id : int <<FK>> 
+  customer_id : UUID <<FK>> 
+  table_id : UUID <<FK>> 
   reservation_date : datetime
   number_of_people : int
   status: nvarchar
@@ -381,7 +381,7 @@ entity Reservation {
 
 ' Impuestos
 entity Tax {
-  * id : int <<PK>>
+  * id : UUID <<PK>>
   --
   name : nvarchar(50)
   rate : decimal
@@ -394,10 +394,10 @@ entity Tax {
 
 ' Caja principal
 entity Cash_register {
-  * id : int <<PK>>
+  * id : UUID <<PK>>
   --
   name : nvarchar(50) /'caja principal salon1'/ 
-  pos_id : int <<FK>> 
+  pos_id : UUID <<FK>> 
   description: nvarchar(50)
   is_deleted : boolean
   created_at : datetime
@@ -406,10 +406,10 @@ entity Cash_register {
 
 ' (Apertura de caja)
 entity Cash_register_session {
-  * id : int <<PK>>
+  * id : UUID <<PK>>
   --
-  cash_register_id : int<<FK>> /'caja principal salon1'/ 
-  employee_id : int <<FK>> 
+  cash_register_id : UUID<<FK>> /'caja principal salon1'/ 
+  employee_id : UUID <<FK>> 
   opened_at : datetime
   closed_at  : datetime
   opening_amount  : decimal /'Monto inicial, ej: $100'/ 
@@ -425,10 +425,10 @@ entity Cash_register_session {
 
 'Movimientos de caja SALE | INCOME | EXPENSE | REFUND
 entity Cash_register_movement {
-  * id : int <<PK>>
+  * id : UUID <<PK>>
   --
-  session_id : int <<FK>> 
-  movement_type_id: int <<FK>>
+  session_id : UUID <<FK>> 
+  movement_type_id: UUID <<FK>>
   amount: decimal
   description : nvarchar
   is_deleted : boolean
@@ -437,10 +437,10 @@ entity Cash_register_movement {
 }
 '(Opcional) Registro de aprobaciones de cierre con discrepancia
 entity Cash_register_session_approval {
-  * id : int <<PK>>
+  * id : UUID <<PK>>
   --
-  session_id : int <<FK>> 
-  approved_by: int <<FK>>
+  session_id : UUID <<FK>> 
+  approved_by: UUID <<FK>>
   mount: decimal
   approved_at : datetime
   note : nvarchar(100)
@@ -449,7 +449,7 @@ entity Cash_register_session_approval {
 }
 ' Promociones y Descuentos
 entity Discount {
-  * id : int <<PK>>
+  * id : UUID <<PK>>
   --
   name : nvarchar(50)
   description : nvarchar(50)
@@ -464,7 +464,7 @@ entity Discount {
 
 ' Turnos
 entity Shift {
-  * id : int <<PK>>
+  * id : UUID <<PK>>
   --
   name : nvarchar(50)
   start_time : datetime
@@ -476,9 +476,9 @@ entity Shift {
 
 ' Auditoría
 entity AuditLog {
-  * id : int <<PK>>
+  * id : UUID <<PK>>
   --
-  employee_id : int <<FK>>
+  employee_id : UUID <<FK>>
   action : nvarchar(50)
   entity_name : nvarchar(50)
   entity_id : int
@@ -490,7 +490,7 @@ entity AuditLog {
 
 ' Proveedor
 entity Supplier {
-  * id : int <<PK>>
+  * id : UUID <<PK>>
   --
   name : nvarchar(50)
   contact : nvarchar(50)
@@ -503,11 +503,11 @@ entity Supplier {
 
 ' Programa de Lealtad
 entity LoyaltyProgram {
-  * id : int <<PK>>
+  * id : UUID <<PK>>
   --
   name : nvarchar(50)
   points : int
-  customer_id : int <<FK>>
+  customer_id : UUID <<FK>>
   is_deleted : boolean
   created_at : datetime
   updated_at : datetime
@@ -515,17 +515,17 @@ entity LoyaltyProgram {
 
 ' Relación entre Employee y Shift mediante tabla intermedia.
 entity Employee_Shift {
-  * id : int <<PK>>
+  * id : UUID <<PK>>
   --
-  employee_id : int <<FK>>
-  shift_id : int <<FK>>
+  employee_id : UUID <<FK>>
+  shift_id : UUID <<FK>>
   is_deleted : boolean
   created_at : datetime
   updated_at : datetime
 }
 /'condicion venta, contado, credito,'/
 entity Sale_condition {
-  * id : int <<PK>>
+  * id : UUID <<PK>>
   --
   name: nvarchar(50)
   is_deleted : boolean
@@ -534,11 +534,11 @@ entity Sale_condition {
 }
 'MODULO FACTURACION
 entity Invoice {
-  * id : int <<PK>>
+  * id : UUID <<PK>>
   --
   batch_Id : int
-  sale_id: int <<FK>>
-  cash_register_movement_id:int <<FK>>
+  sale_id: UUID <<FK>>
+  cash_register_movement_id:UUID <<FK>>
   key: mvarchar(50) /'(si no se envía el API lo genera automáticamente y lo devuelve en la respuesta)'/
   consecutiveNumber : varchar(20)
   issueDate : datetime
@@ -556,7 +556,7 @@ entity Invoice {
 
 ' Tabla maestra de pasarelas de pago.
 entity PaymentGateway {
-  * id : int <<PK>>
+  * id : UUID <<PK>>
   --
   name : varchar(50) /'ej: Onvopay, tilopay,etc.'/
   code: varchar(50) /'ej: ONVO, TILO,etc.'/
@@ -567,10 +567,10 @@ entity PaymentGateway {
 }
 'Configuración de cada cliente para cada pasarela.
 entity GatewayCustomer{
-  * id : int <<PK>>
+  * id : UUID <<PK>>
   --
-  customer_id: int <<FK>> /'cliente base'/
-  paymentGateway_id: int <<FK>> /'pasarela de pago'/
+  customer_id: UUID <<FK>> /'cliente base'/
+  paymentGateway_id: UUID <<FK>> /'pasarela de pago'/
   configJson: nvarchar(max) /'JSON parametros espesificos'/
   ApiKey: varchar(255)
   SecretKey: varchar(255)
@@ -582,9 +582,9 @@ entity GatewayCustomer{
 }
 'si existe metodo de pago y hay que configurar para sinpe, card, banco.
 entity GatewayPaymentMethods{
-  * id : int <<PK>>
+  * id : UUID <<PK>>
   --
-  gatewayCustomer_id: int <<FK>>
+  gatewayCustomer_id: UUID <<FK>>
   methodType: varchar(50)  /'sinpe,card,zunify'/
   externalMethodId: varchar(100) /'id que devuelve la Api de onvo por cada metodo de pago'/
   metaJson: nvarchar(MAX) /'Json Configuracion base'/
@@ -594,10 +594,10 @@ entity GatewayPaymentMethods{
 }
 'cuando se realice la transaccion copn el tipo de pasarela y metodo de pago (intencion de pago etc.)
 entity GatewayTransactions {
-  * id      : int <<PK>>
+  * id      : UUID <<PK>>
   --
-  gatewayCustomer_id   : int <<FK>>
-  gatewayPaymentMethod_id : int <<FK>> /'opcional si existe metodo'/
+  gatewayCustomer_id   : UUID <<FK>>
+  gatewayPaymentMethod_id : UUID <<FK>> /'opcional si existe metodo'/
   amount: decimal(18,2)
   currency: varchar(10)
   status : boolean: varchar(50)
